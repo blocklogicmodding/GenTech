@@ -120,27 +120,6 @@ public class CustomGeneratorRecipeConfig {
                 # Categories determine generation speed and fluid consumption (see main config)
                 # Multiple recipes can use the same catalyst with different fluids
                 # Conflicts resolved alphabetically by recipe name
-                
-                [[recipes]]
-                name = "cobblestone_basic"
-                catalyst = "minecraft:cobblestone"
-                fluid1 = "minecraft:water"
-                fluid2 = "minecraft:lava"
-                category = "soft"
-                
-                [[recipes]]
-                name = "stone_basic"
-                catalyst = "minecraft:stone"
-                fluid1 = "minecraft:water"
-                fluid2 = "minecraft:lava"
-                category = "soft"
-                
-                [[recipes]]
-                name = "obsidian_basic"
-                catalyst = "minecraft:obsidian"
-                fluid1 = "minecraft:water"
-                fluid2 = "minecraft:lava"
-                category = "hard"
                 """;
 
         Files.writeString(recipesFile, defaultContent);
