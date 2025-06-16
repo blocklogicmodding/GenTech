@@ -1,8 +1,12 @@
 package com.blocklogic.gentech;
 
 import com.blocklogic.gentech.block.GTBlocks;
+import com.blocklogic.gentech.block.entity.GTBlockEntities;
 import com.blocklogic.gentech.item.GTCreativeTab;
 import com.blocklogic.gentech.item.GTItems;
+import com.blocklogic.gentech.screen.GTMenuTypes;
+import com.blocklogic.gentech.screen.custom.GeneratorScreen;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -53,6 +57,8 @@ public class GenTech {
         GTBlocks.register(modEventBus);
         GTItems.register(modEventBus);
         GTCreativeTab.register(modEventBus);
+        GTBlockEntities.register(modEventBus);
+        GTMenuTypes.register(modEventBus);
 
         modEventBus.addListener(this::addCreative);
 
@@ -77,6 +83,11 @@ public class GenTech {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
 
+        }
+
+        @SubscribeEvent
+        public static void registerScreens(RegisterMenuScreensEvent event) {
+            event.register(GTMenuTypes.GENERATOR_MENU.get(), GeneratorScreen::new);
         }
     }
 }
