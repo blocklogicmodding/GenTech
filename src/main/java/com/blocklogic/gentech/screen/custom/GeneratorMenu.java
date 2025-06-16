@@ -7,7 +7,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.inventory.SimpleContainerData;
+import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.SlotItemHandler;
@@ -15,6 +15,7 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 public class GeneratorMenu extends AbstractContainerMenu {
     private final GeneratorBlockEntity blockEntity;
     private final int upgradeSlots;
+    private final ContainerLevelAccess access;
     private final ContainerData data;
 
     // Slot positions based on your layout
@@ -22,7 +23,7 @@ public class GeneratorMenu extends AbstractContainerMenu {
     private static final int OUTPUT_START_Y = 17;
     private static final int UPGRADE_START_X = 188;
     private static final int UPGRADE_START_Y = 17;
-    private static final int UPGRADE_SLOT_SPACING = 18; // 35-17=18, 53-35=18
+    private static final int UPGRADE_SLOT_SPACING = 18;
 
     private static final int PLAYER_INVENTORY_X = 26;
     private static final int PLAYER_INVENTORY_Y = 86;
@@ -31,7 +32,7 @@ public class GeneratorMenu extends AbstractContainerMenu {
 
     // Slot indices
     private static final int OUTPUT_SLOTS = 12;
-    private static final int UPGRADE_SLOT_START = OUTPUT_SLOTS; // Start after output slots
+    private static final int UPGRADE_SLOT_START = OUTPUT_SLOTS;
 
     // Constructor for IContainerFactory (used by registration)
     public GeneratorMenu(int containerId, Inventory playerInventory, FriendlyByteBuf extraData) {
@@ -44,9 +45,10 @@ public class GeneratorMenu extends AbstractContainerMenu {
         super(GTMenuTypes.GENERATOR_MENU.get(), containerId);
         this.blockEntity = blockEntity;
         this.upgradeSlots = blockEntity.getUpgradeSlots();
+        this.access = ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos());
 
-        // Create container data for syncing fluid levels (4 values: water amount, water capacity, lava amount, lava capacity)
-        this.data = new SimpleContainerData(4) {
+        // Create a DIRECT reference ContainerData that gets live values
+        this.data = new ContainerData() {
             @Override
             public int get(int index) {
                 return switch (index) {
@@ -60,7 +62,12 @@ public class GeneratorMenu extends AbstractContainerMenu {
 
             @Override
             public void set(int index, int value) {
-                // Data is read-only from server, no need to implement
+                // Server -> Client sync only, no setting from client
+            }
+
+            @Override
+            public int getCount() {
+                return 4;
             }
         };
 
@@ -83,8 +90,8 @@ public class GeneratorMenu extends AbstractContainerMenu {
     }
 
     private void addOutputSlots() {
-        // 4x2 grid for 8 output slots
-        for (int row = 0; row < 2; row++) {
+        // 4x3 grid for 12 output slots
+        for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 4; col++) {
                 int slotIndex = row * 4 + col;
                 int x = OUTPUT_START_X + col * 18;
@@ -140,21 +147,21 @@ public class GeneratorMenu extends AbstractContainerMenu {
         }
     }
 
-    // Getter methods for accessing synced data
+    // Getter methods for accessing synced data - THESE NOW GET LIVE DATA
     public int getWaterAmount() {
-        return data.get(0);
+        return this.data.get(0);
     }
 
     public int getWaterCapacity() {
-        return data.get(1);
+        return this.data.get(1);
     }
 
     public int getLavaAmount() {
-        return data.get(2);
+        return this.data.get(2);
     }
 
     public int getLavaCapacity() {
-        return data.get(3);
+        return this.data.get(3);
     }
 
     public float getWaterLevel() {
@@ -219,9 +226,7 @@ public class GeneratorMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return this.blockEntity.getLevel() != null &&
-                this.blockEntity.getLevel().getBlockEntity(this.blockEntity.getBlockPos()) == this.blockEntity &&
-                player.distanceToSqr(this.blockEntity.getBlockPos().getCenter()) <= 64.0;
+        return stillValid(this.access, player, this.blockEntity.getBlockState().getBlock());
     }
 
     public GeneratorBlockEntity getBlockEntity() {

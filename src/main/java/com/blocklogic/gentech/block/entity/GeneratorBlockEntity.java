@@ -16,7 +16,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -30,7 +32,7 @@ import org.jetbrains.annotations.Nullable;
 public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
 
     // Constants for slot counts
-    private static final int OUTPUT_SLOTS = 8;
+    private static final int OUTPUT_SLOTS = 12;
     private static final int COPPER_UPGRADE_SLOTS = 0;
     private static final int IRON_UPGRADE_SLOTS = 1;
     private static final int DIAMOND_UPGRADE_SLOTS = 2;
@@ -46,6 +48,10 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
     // Cached tier info
     private GeneratorTier tier;
     private int upgradeSlots;
+
+    // Client sync tracking
+    private int lastWaterAmount = -1;
+    private int lastLavaAmount = -1;
 
     public GeneratorBlockEntity(BlockPos pos, BlockState blockState) {
         super(GTBlockEntities.GENERATOR_BLOCK_ENTITY.get(), pos, blockState);
@@ -68,6 +74,7 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
             protected void onContentsChanged() {
                 setChanged();
                 if (level != null && !level.isClientSide()) {
+                    // Force block update to sync to client
                     level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
                 }
             }
@@ -83,6 +90,7 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
             protected void onContentsChanged() {
                 setChanged();
                 if (level != null && !level.isClientSide()) {
+                    // Force block update to sync to client
                     level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
                 }
             }
@@ -105,6 +113,29 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
                 return true; // TODO: Add upgrade item tag validation
             }
         };
+    }
+
+    // Static tick method for the block entity
+    public static void tick(Level level, BlockPos pos, BlockState state, GeneratorBlockEntity blockEntity) {
+        if (level.isClientSide()) {
+            return; // Only tick on server
+        }
+
+        // Check if fluid amounts have changed and force sync if needed
+        int currentWater = blockEntity.waterTank.getFluidAmount();
+        int currentLava = blockEntity.lavaTank.getFluidAmount();
+
+        if (currentWater != blockEntity.lastWaterAmount || currentLava != blockEntity.lastLavaAmount) {
+            blockEntity.lastWaterAmount = currentWater;
+            blockEntity.lastLavaAmount = currentLava;
+
+            // Force block update to sync fluid data to clients
+            level.sendBlockUpdated(pos, state, state, 3);
+            blockEntity.setChanged();
+        }
+
+        // TODO: Add generation logic here
+        // This is where you'll implement the actual block generation
     }
 
     // Determine generator tier from block state
@@ -149,25 +180,11 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         // Convert relative side to absolute direction
         Direction absoluteSide = getAbsoluteSide(facing, side);
 
-        System.out.println("GenTech: Block facing: " + facing + ", Query side: " + side + ", Absolute side: " + absoluteSide);
-
         return switch (absoluteSide) {
-            case WEST -> {
-                System.out.println("GenTech: Returning water tank for WEST side");
-                yield waterTank;
-            }
-            case EAST -> {
-                System.out.println("GenTech: Returning lava tank for EAST side");
-                yield lavaTank;
-            }
-            case NORTH, SOUTH -> {
-                System.out.println("GenTech: Returning no-input handler for NORTH/SOUTH side");
-                yield new NoInputFluidHandler();
-            }
-            default -> {
-                System.out.println("GenTech: Returning no-access handler for " + absoluteSide + " side");
-                yield new NoAccessFluidHandler();
-            }
+            case WEST -> waterTank;
+            case EAST -> lavaTank;
+            case NORTH, SOUTH -> new NoInputFluidHandler();
+            default -> new NoAccessFluidHandler();
         };
     }
 
@@ -244,6 +261,7 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
     public void addTestFluids() {
         waterTank.fill(new FluidStack(Fluids.WATER, 5000), IFluidHandler.FluidAction.EXECUTE);
         lavaTank.fill(new FluidStack(Fluids.LAVA, 7500), IFluidHandler.FluidAction.EXECUTE);
+        setChanged();
     }
 
     // MenuProvider implementation
@@ -466,6 +484,8 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         super.setChanged();
         if (level != null && !level.isClientSide()) {
             level.invalidateCapabilities(getBlockPos());
+            // Force sync when data changes
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
         }
     }
 
