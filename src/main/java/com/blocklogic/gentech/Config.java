@@ -20,7 +20,6 @@ public class Config {
 
     public static ModConfigSpec COMMON_CONFIG;
 
-    // Legacy compatibility field for existing registration
     public static ModConfigSpec SPEC;
 
     // ========================================
@@ -92,10 +91,6 @@ public class Config {
     public static ModConfigSpec.ConfigValue<List<? extends String>> SOFT_GENERATABLE_BLOCKS;
     public static ModConfigSpec.ConfigValue<List<? extends String>> MEDIUM_GENERATABLE_BLOCKS;
     public static ModConfigSpec.ConfigValue<List<? extends String>> HARD_GENERATABLE_BLOCKS;
-
-    // ========================================
-    // REGISTRATION METHODS
-    // ========================================
 
     public static void register(ModContainer container) {
         registerCommonConfigs(container);
@@ -420,10 +415,6 @@ public class Config {
         return HARD_GENERATABLE_BLOCKS.get();
     }
 
-    // ========================================
-    // UTILITY METHODS
-    // ========================================
-
     private static boolean validateBlockName(final Object obj) {
         if (!(obj instanceof String blockName)) {
             return false;
@@ -442,23 +433,14 @@ public class Config {
         }
     }
 
-    /**
-     * Get validated soft generatable blocks, filtering out any invalid entries
-     */
     public static List<String> getValidatedSoftGeneratableBlocks() {
         return validateAndFilterBlockList(getSoftGeneratableBlocks(), "soft");
     }
 
-    /**
-     * Get validated medium generatable blocks, filtering out any invalid entries
-     */
     public static List<String> getValidatedMediumGeneratableBlocks() {
         return validateAndFilterBlockList(getMediumGeneratableBlocks(), "medium");
     }
 
-    /**
-     * Get validated hard generatable blocks, filtering out any invalid entries
-     */
     public static List<String> getValidatedHardGeneratableBlocks() {
         return validateAndFilterBlockList(getHardGeneratableBlocks(), "hard");
     }
@@ -485,7 +467,6 @@ public class Config {
     public static void loadConfig() {
         LOGGER.info("GenTech configs reloaded");
 
-        // Validate block lists and log any issues
         int totalSoft = getSoftGeneratableBlocks().size();
         int validSoft = getValidatedSoftGeneratableBlocks().size();
         if (totalSoft != validSoft) {
@@ -504,10 +485,6 @@ public class Config {
             LOGGER.warn("Hard blocks: {}/{} entries are valid", validHard, totalHard);
         }
     }
-
-    // ========================================
-    // EVENT HANDLING
-    // ========================================
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {

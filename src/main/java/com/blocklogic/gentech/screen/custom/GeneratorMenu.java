@@ -19,13 +19,13 @@ public class GeneratorMenu extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final Level level;
 
-    // Client-side cached values (like your other mod)
     private int lastWaterAmount = 0;
     private int lastWaterCapacity = 0;
     private int lastLavaAmount = 0;
     private int lastLavaCapacity = 0;
+    private float lastProgressLevel = 0.0f;
+    private GeneratorBlockEntity.BlockCategory lastTargetCategory = null;
 
-    // Slot positions based on your layout
     private static final int OUTPUT_START_X = 71;
     private static final int OUTPUT_START_Y = 17;
     private static final int UPGRADE_START_X = 188;
@@ -37,17 +37,13 @@ public class GeneratorMenu extends AbstractContainerMenu {
     private static final int PLAYER_HOTBAR_X = 26;
     private static final int PLAYER_HOTBAR_Y = 145;
 
-    // Slot indices
     private static final int OUTPUT_SLOTS = 12;
     private static final int UPGRADE_SLOT_START = OUTPUT_SLOTS;
 
-    // Constructor for IContainerFactory (used by registration)
     public GeneratorMenu(int containerId, Inventory playerInventory, FriendlyByteBuf extraData) {
-        this(containerId, playerInventory, (GeneratorBlockEntity) playerInventory.player.level()
-                .getBlockEntity(extraData.readBlockPos()));
+        this(containerId, playerInventory, (GeneratorBlockEntity) playerInventory.player.level().getBlockEntity(extraData.readBlockPos()));
     }
 
-    // Main constructor
     public GeneratorMenu(int containerId, Inventory playerInventory, GeneratorBlockEntity blockEntity) {
         super(GTMenuTypes.GENERATOR_MENU.get(), containerId);
         this.blockEntity = blockEntity;
@@ -57,24 +53,18 @@ public class GeneratorMenu extends AbstractContainerMenu {
 
         checkContainerSize(playerInventory, OUTPUT_SLOTS + upgradeSlots);
 
-        // Add output slots (4x3 grid to make 12 slots)
         addOutputSlots();
 
-        // Add upgrade slots (dynamic based on tier)
         addUpgradeSlots();
 
-        // Add player inventory
         addPlayerInventory(playerInventory);
 
-        // Add player hotbar
         addPlayerHotbar(playerInventory);
 
-        // Add data slots for syncing (like your other mod)
         addDataSlots();
     }
 
     private void addDataSlots() {
-        // Water amount
         this.addDataSlot(new DataSlot() {
             @Override
             public int get() {
@@ -87,7 +77,6 @@ public class GeneratorMenu extends AbstractContainerMenu {
             }
         });
 
-        // Water capacity
         this.addDataSlot(new DataSlot() {
             @Override
             public int get() {
@@ -100,7 +89,6 @@ public class GeneratorMenu extends AbstractContainerMenu {
             }
         });
 
-        // Lava amount
         this.addDataSlot(new DataSlot() {
             @Override
             public int get() {
@@ -113,7 +101,6 @@ public class GeneratorMenu extends AbstractContainerMenu {
             }
         });
 
-        // Lava capacity
         this.addDataSlot(new DataSlot() {
             @Override
             public int get() {
@@ -125,10 +112,38 @@ public class GeneratorMenu extends AbstractContainerMenu {
                 lastLavaCapacity = value;
             }
         });
+
+        this.addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return (int) (blockEntity.getProgressLevel() * 1000);
+            }
+
+            @Override
+            public void set(int value) {
+                lastProgressLevel = value / 1000.0f;
+            }
+        });
+
+        this.addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                GeneratorBlockEntity.BlockCategory category = blockEntity.getTargetCategory();
+                return category != null ? category.ordinal() : -1;
+            }
+
+            @Override
+            public void set(int value) {
+                if (value >= 0 && value < GeneratorBlockEntity.BlockCategory.values().length) {
+                    lastTargetCategory = GeneratorBlockEntity.BlockCategory.values()[value];
+                } else {
+                    lastTargetCategory = null;
+                }
+            }
+        });
     }
 
     private void addOutputSlots() {
-        // 4x3 grid for 12 output slots
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 4; col++) {
                 int slotIndex = row * 4 + col;
@@ -138,7 +153,7 @@ public class GeneratorMenu extends AbstractContainerMenu {
                 addSlot(new SlotItemHandler(blockEntity.getItemHandler(), slotIndex, x, y) {
                     @Override
                     public boolean mayPlace(ItemStack stack) {
-                        return false; // Output slots - no input allowed
+                        return false;
                     }
                 });
             }
@@ -146,7 +161,6 @@ public class GeneratorMenu extends AbstractContainerMenu {
     }
 
     private void addUpgradeSlots() {
-        // Add upgrade slots based on tier (0-3 slots)
         for (int i = 0; i < upgradeSlots; i++) {
             int slotIndex = UPGRADE_SLOT_START + i;
             int x = UPGRADE_START_X;
@@ -155,18 +169,16 @@ public class GeneratorMenu extends AbstractContainerMenu {
             addSlot(new SlotItemHandler(blockEntity.getItemHandler(), slotIndex, x, y) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
-                    // TODO: Check if stack is a valid upgrade item using tags
-                    return true; // Placeholder - will implement tag checking later
+                    return blockEntity.getItemHandler().isItemValid(slotIndex, stack);
                 }
             });
         }
     }
 
     private void addPlayerInventory(Inventory playerInventory) {
-        // Player inventory (3x9 grid)
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                int slotIndex = col + row * 9 + 9; // +9 to skip hotbar
+                int slotIndex = col + row * 9 + 9;
                 int x = PLAYER_INVENTORY_X + col * 18;
                 int y = PLAYER_INVENTORY_Y + row * 18;
 
@@ -176,7 +188,6 @@ public class GeneratorMenu extends AbstractContainerMenu {
     }
 
     private void addPlayerHotbar(Inventory playerInventory) {
-        // Player hotbar (1x9 grid)
         for (int col = 0; col < 9; col++) {
             int x = PLAYER_HOTBAR_X + col * 18;
             int y = PLAYER_HOTBAR_Y;
@@ -185,7 +196,6 @@ public class GeneratorMenu extends AbstractContainerMenu {
         }
     }
 
-    // Getter methods that work on both client and server (like your other mod)
     public int getWaterAmount() {
         return level.isClientSide ? lastWaterAmount : blockEntity.getWaterAmount();
     }
@@ -214,6 +224,14 @@ public class GeneratorMenu extends AbstractContainerMenu {
         return (float) getLavaAmount() / (float) capacity;
     }
 
+    public float getProgressLevel() {
+        return level.isClientSide ? lastProgressLevel : blockEntity.getProgressLevel();
+    }
+
+    public GeneratorBlockEntity.BlockCategory getTargetCategory() {
+        return level.isClientSide ? lastTargetCategory : blockEntity.getTargetCategory();
+    }
+
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         ItemStack itemstack = ItemStack.EMPTY;
@@ -223,30 +241,31 @@ public class GeneratorMenu extends AbstractContainerMenu {
             ItemStack stackInSlot = slot.getItem();
             itemstack = stackInSlot.copy();
 
-            // If item is in generator slots (output or upgrade)
             if (index < OUTPUT_SLOTS + upgradeSlots) {
-                // Try to move to player inventory
                 if (!this.moveItemStackTo(stackInSlot, OUTPUT_SLOTS + upgradeSlots, this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
             } else {
-                // Item is in player inventory
-                // Try to move to upgrade slots first (if it's a valid upgrade)
-                if (index >= OUTPUT_SLOTS + upgradeSlots) {
-                    // TODO: Add logic to identify upgrade items and move them to upgrade slots
-                    // For now, just try to move to any available slot
-                    if (!this.moveItemStackTo(stackInSlot, OUTPUT_SLOTS, OUTPUT_SLOTS + upgradeSlots, false)) {
-                        // If that fails, do standard player inventory shuffling
-                        if (index < OUTPUT_SLOTS + upgradeSlots + 27) {
-                            // From main inventory to hotbar
-                            if (!this.moveItemStackTo(stackInSlot, OUTPUT_SLOTS + upgradeSlots + 27, OUTPUT_SLOTS + upgradeSlots + 36, false)) {
-                                return ItemStack.EMPTY;
-                            }
-                        } else {
-                            // From hotbar to main inventory
-                            if (!this.moveItemStackTo(stackInSlot, OUTPUT_SLOTS + upgradeSlots, OUTPUT_SLOTS + upgradeSlots + 27, false)) {
-                                return ItemStack.EMPTY;
-                            }
+                boolean movedToUpgrade = false;
+
+                for (int i = OUTPUT_SLOTS; i < OUTPUT_SLOTS + upgradeSlots; i++) {
+                    Slot upgradeSlot = this.slots.get(i);
+                    if (upgradeSlot.mayPlace(stackInSlot)) {
+                        if (this.moveItemStackTo(stackInSlot, i, i + 1, false)) {
+                            movedToUpgrade = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!movedToUpgrade) {
+                    if (index < OUTPUT_SLOTS + upgradeSlots + 27) {
+                        if (!this.moveItemStackTo(stackInSlot, OUTPUT_SLOTS + upgradeSlots + 27, OUTPUT_SLOTS + upgradeSlots + 36, false)) {
+                            return ItemStack.EMPTY;
+                        }
+                    } else {
+                        if (!this.moveItemStackTo(stackInSlot, OUTPUT_SLOTS + upgradeSlots, OUTPUT_SLOTS + upgradeSlots + 27, false)) {
+                            return ItemStack.EMPTY;
                         }
                     }
                 }

@@ -78,10 +78,6 @@ public class GenTech {
 
     }
 
-    private void registerCapabilities(RegisterCapabilitiesEvent event) {
-        GeneratorBlockEntity.registerCapabilities(event);
-    }
-
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
 
     }

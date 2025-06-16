@@ -5,20 +5,24 @@ import com.blocklogic.gentech.block.custom.CopperGeneratorBlock;
 import com.blocklogic.gentech.block.custom.DiamondGeneratorBlock;
 import com.blocklogic.gentech.block.custom.IronGeneratorBlock;
 import com.blocklogic.gentech.block.custom.NetheriteGeneratorBlock;
+import com.blocklogic.gentech.item.GTItems;
 import com.blocklogic.gentech.screen.custom.GeneratorMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -29,41 +33,42 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
 
-    // Constants for slot counts
     private static final int OUTPUT_SLOTS = 12;
     private static final int COPPER_UPGRADE_SLOTS = 0;
     private static final int IRON_UPGRADE_SLOTS = 1;
     private static final int DIAMOND_UPGRADE_SLOTS = 2;
     private static final int NETHERITE_UPGRADE_SLOTS = 3;
 
-    // Inventory handler
+    private int progress = 0;
+    private int maxProgress = 0;
+    private Block targetBlock = null;
+    private BlockCategory targetCategory = null;
+    private int lastValidatedTick = -1;
+    private static final int VALIDATION_INTERVAL = 20;
+
     private final ItemStackHandler itemHandler;
 
-    // Fluid tanks
     private final FluidTank waterTank;
     private final FluidTank lavaTank;
 
-    // Cached tier info
     private GeneratorTier tier;
     private int upgradeSlots;
 
-    // Client sync tracking
     private int lastWaterAmount = -1;
     private int lastLavaAmount = -1;
 
     public GeneratorBlockEntity(BlockPos pos, BlockState blockState) {
         super(GTBlockEntities.GENERATOR_BLOCK_ENTITY.get(), pos, blockState);
 
-        // Determine tier and upgrade slots based on block type
         this.tier = determineTier(blockState);
         this.upgradeSlots = getUpgradeSlotsForTier(this.tier);
 
-        // Get fluid buffer capacity from config based on tier
         int fluidCapacity = getFluidCapacityForTier(this.tier);
 
-        // Create fluid tanks with tier-specific capacities
         this.waterTank = new FluidTank(fluidCapacity) {
             @Override
             public boolean isFluidValid(FluidStack stack) {
@@ -74,7 +79,6 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
             protected void onContentsChanged() {
                 setChanged();
                 if (level != null && !level.isClientSide()) {
-                    // Force block update to sync to client
                     level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
                 }
             }
@@ -90,13 +94,11 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
             protected void onContentsChanged() {
                 setChanged();
                 if (level != null && !level.isClientSide()) {
-                    // Force block update to sync to client
                     level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
                 }
             }
         };
 
-        // Create inventory handler with output slots + upgrade slots
         this.itemHandler = new ItemStackHandler(OUTPUT_SLOTS + upgradeSlots) {
             @Override
             protected void onContentsChanged(int slot) {
@@ -105,40 +107,296 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
 
             @Override
             public boolean isItemValid(int slot, ItemStack stack) {
-                // Output slots (0-7) - no input allowed
                 if (slot < OUTPUT_SLOTS) {
                     return false;
                 }
-                // Upgrade slots - only accept upgrade items (will implement tag check later)
-                return true; // TODO: Add upgrade item tag validation
+                return isValidUpgradeItem(stack);
             }
         };
     }
 
-    // Static tick method for the block entity
     public static void tick(Level level, BlockPos pos, BlockState state, GeneratorBlockEntity blockEntity) {
         if (level.isClientSide()) {
-            return; // Only tick on server
+            return;
         }
 
-        // Check if fluid amounts have changed and force sync if needed
         int currentWater = blockEntity.waterTank.getFluidAmount();
         int currentLava = blockEntity.lavaTank.getFluidAmount();
 
         if (currentWater != blockEntity.lastWaterAmount || currentLava != blockEntity.lastLavaAmount) {
             blockEntity.lastWaterAmount = currentWater;
             blockEntity.lastLavaAmount = currentLava;
-
-            // Force block update to sync fluid data to clients
             level.sendBlockUpdated(pos, state, state, 3);
             blockEntity.setChanged();
         }
 
-        // TODO: Add generation logic here
-        // This is where you'll implement the actual block generation
+        if (level.getGameTime() % VALIDATION_INTERVAL == 0 || blockEntity.lastValidatedTick == -1) {
+            blockEntity.validateTargetBlock();
+            blockEntity.lastValidatedTick = (int) level.getGameTime();
+        }
+
+        if (blockEntity.targetBlock == null || blockEntity.targetCategory == null) {
+            if (blockEntity.progress > 0) {
+                blockEntity.progress = 0;
+                blockEntity.maxProgress = 0;
+                blockEntity.setChanged();
+            }
+            return;
+        }
+
+        if (!blockEntity.canGenerate()) {
+            return;
+        }
+
+        if (blockEntity.maxProgress == 0) {
+            blockEntity.startGeneration();
+        }
+
+        blockEntity.progress++;
+
+        if (blockEntity.progress >= blockEntity.maxProgress) {
+            blockEntity.completeGeneration();
+        }
+
+        blockEntity.setChanged();
     }
 
-    // Determine generator tier from block state
+    private void validateTargetBlock() {
+        if (level == null) return;
+
+        BlockPos belowPos = worldPosition.below();
+        BlockState belowState = level.getBlockState(belowPos);
+        Block belowBlock = belowState.getBlock();
+
+        ResourceLocation blockLocation = BuiltInRegistries.BLOCK.getKey(belowBlock);
+        String blockName = blockLocation.toString();
+
+        List<String> softBlocks = Config.getValidatedSoftGeneratableBlocks();
+        List<String> mediumBlocks = Config.getValidatedMediumGeneratableBlocks();
+        List<String> hardBlocks = Config.getValidatedHardGeneratableBlocks();
+
+        if (softBlocks.contains(blockName)) {
+            this.targetBlock = belowBlock;
+            this.targetCategory = BlockCategory.SOFT;
+        } else if (mediumBlocks.contains(blockName)) {
+            this.targetBlock = belowBlock;
+            this.targetCategory = BlockCategory.MEDIUM;
+        } else if (hardBlocks.contains(blockName)) {
+            this.targetBlock = belowBlock;
+            this.targetCategory = BlockCategory.HARD;
+        } else {
+            this.targetBlock = null;
+            this.targetCategory = null;
+        }
+    }
+
+    private boolean canGenerate() {
+        if (targetBlock == null || targetCategory == null) {
+            return false;
+        }
+
+        if (!hasOutputSpace()) {
+            return false;
+        }
+
+        int requiredFluidAmount = getRequiredFluidConsumption();
+        return waterTank.getFluidAmount() >= requiredFluidAmount &&
+                lavaTank.getFluidAmount() >= requiredFluidAmount;
+    }
+
+    private boolean hasOutputSpace() {
+        ItemStack targetItem = new ItemStack(targetBlock.asItem());
+
+        for (int i = 0; i < OUTPUT_SLOTS; i++) {
+            ItemStack slotStack = itemHandler.getStackInSlot(i);
+
+            if (slotStack.isEmpty()) {
+                return true;
+            }
+
+            if (ItemStack.isSameItemSameComponents(slotStack, targetItem) &&
+                    slotStack.getCount() < slotStack.getMaxStackSize()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void startGeneration() {
+        if (targetCategory == null) return;
+
+        int baseTime = getBaseGenerationTime();
+
+        double speedMultiplier = getSpeedMultiplier();
+
+        this.maxProgress = Math.max(1, (int) (baseTime / speedMultiplier));
+        this.progress = 0;
+    }
+
+    private void completeGeneration() {
+        if (targetBlock == null) return;
+
+        int fluidConsumption = getRequiredFluidConsumption();
+        waterTank.drain(fluidConsumption, IFluidHandler.FluidAction.EXECUTE);
+        lavaTank.drain(fluidConsumption, IFluidHandler.FluidAction.EXECUTE);
+
+        ItemStack generatedItem = new ItemStack(targetBlock.asItem());
+        addItemToOutput(generatedItem);
+
+        this.progress = 0;
+        this.maxProgress = 0;
+    }
+
+    private void addItemToOutput(ItemStack item) {
+        for (int i = 0; i < OUTPUT_SLOTS; i++) {
+            ItemStack slotStack = itemHandler.getStackInSlot(i);
+
+            if (!slotStack.isEmpty() && ItemStack.isSameItemSameComponents(slotStack, item)) {
+                int canAdd = Math.min(item.getCount(), slotStack.getMaxStackSize() - slotStack.getCount());
+                if (canAdd > 0) {
+                    slotStack.grow(canAdd);
+                    item.shrink(canAdd);
+                    if (item.isEmpty()) {
+                        return;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < OUTPUT_SLOTS; i++) {
+            ItemStack slotStack = itemHandler.getStackInSlot(i);
+            if (slotStack.isEmpty()) {
+                itemHandler.setStackInSlot(i, item.copy());
+                return;
+            }
+        }
+    }
+
+    private int getBaseGenerationTime() {
+        if (targetCategory == null) return 100;
+
+        return switch (tier) {
+            case COPPER -> switch (targetCategory) {
+                case SOFT -> Config.getCopperGeneratorSoftSpeed();
+                case MEDIUM -> Config.getCopperGeneratorMediumSpeed();
+                case HARD -> Config.getCopperGeneratorHardSpeed();
+            };
+            case IRON -> switch (targetCategory) {
+                case SOFT -> Config.getIronGeneratorSoftSpeed();
+                case MEDIUM -> Config.getIronGeneratorMediumSpeed();
+                case HARD -> Config.getIronGeneratorHardSpeed();
+            };
+            case DIAMOND -> switch (targetCategory) {
+                case SOFT -> Config.getDiamondGeneratorSoftSpeed();
+                case MEDIUM -> Config.getDiamondGeneratorMediumSpeed();
+                case HARD -> Config.getDiamondGeneratorHardSpeed();
+            };
+            case NETHERITE -> switch (targetCategory) {
+                case SOFT -> Config.getNetheriteGeneratorSoftSpeed();
+                case MEDIUM -> Config.getNetheriteGeneratorMediumSpeed();
+                case HARD -> Config.getNetheriteGeneratorHardSpeed();
+            };
+        };
+    }
+
+    private int getRequiredFluidConsumption() {
+        if (targetCategory == null) return 100;
+
+        int baseConsumption = switch (tier) {
+            case COPPER -> switch (targetCategory) {
+                case SOFT -> Config.getCopperGeneratorSoftConsumption();
+                case MEDIUM -> Config.getCopperGeneratorMediumConsumption();
+                case HARD -> Config.getCopperGeneratorHardConsumption();
+            };
+            case IRON -> switch (targetCategory) {
+                case SOFT -> Config.getIronGeneratorSoftConsumption();
+                case MEDIUM -> Config.getIronGeneratorMediumConsumption();
+                case HARD -> Config.getIronGeneratorHardConsumption();
+            };
+            case DIAMOND -> switch (targetCategory) {
+                case SOFT -> Config.getDiamondGeneratorSoftConsumption();
+                case MEDIUM -> Config.getDiamondGeneratorMediumConsumption();
+                case HARD -> Config.getDiamondGeneratorHardConsumption();
+            };
+            case NETHERITE -> switch (targetCategory) {
+                case SOFT -> Config.getNetheriteGeneratorSoftConsumption();
+                case MEDIUM -> Config.getNetheriteGeneratorMediumConsumption();
+                case HARD -> Config.getNetheriteGeneratorHardConsumption();
+            };
+        };
+
+        double efficiencyReduction = getEfficiencyReduction();
+        return Math.max(1, (int) (baseConsumption * (1.0 - efficiencyReduction)));
+    }
+
+    private double getSpeedMultiplier() {
+        double multiplier = 1.0;
+
+        for (int i = OUTPUT_SLOTS; i < OUTPUT_SLOTS + upgradeSlots; i++) {
+            ItemStack upgrade = itemHandler.getStackInSlot(i);
+            if (!upgrade.isEmpty()) {
+                Item upgradeItem = upgrade.getItem();
+
+                if (upgradeItem == GTItems.BASIC_SPEED_UPGRADE.get()) {
+                    multiplier *= Config.getBasicSpeedUpgradeMultiplier();
+                } else if (upgradeItem == GTItems.ADVANCED_SPEED_UPGRADE.get()) {
+                    multiplier *= Config.getAdvancedSpeedUpgradeMultiplier();
+                } else if (upgradeItem == GTItems.ULTIMATE_SPEED_UPGRADE.get()) {
+                    multiplier *= Config.getUltimateSpeedUpgradeMultiplier();
+                }
+            }
+        }
+
+        return multiplier;
+    }
+
+    private double getEfficiencyReduction() {
+        double reduction = 0.0;
+
+        for (int i = OUTPUT_SLOTS; i < OUTPUT_SLOTS + upgradeSlots; i++) {
+            ItemStack upgrade = itemHandler.getStackInSlot(i);
+            if (!upgrade.isEmpty()) {
+                Item upgradeItem = upgrade.getItem();
+
+                if (upgradeItem == GTItems.BASIC_EFFICIENCY_UPGRADE.get()) {
+                    reduction += Config.getBasicEfficiencyUpgradeReduction();
+                } else if (upgradeItem == GTItems.ADVANCED_EFFICIENCY_UPGRADE.get()) {
+                    reduction += Config.getAdvancedEfficiencyUpgradeReduction();
+                } else if (upgradeItem == GTItems.ULTIMATE_EFFICIENCY_UPGRADE.get()) {
+                    reduction += Config.getUltimateEfficiencyUpgradeReduction();
+                }
+            }
+        }
+
+        return Math.min(0.95, reduction);
+    }
+
+    private boolean isValidUpgradeItem(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+
+        Item item = stack.getItem();
+        return item == GTItems.BASIC_SPEED_UPGRADE.get() ||
+                item == GTItems.ADVANCED_SPEED_UPGRADE.get() ||
+                item == GTItems.ULTIMATE_SPEED_UPGRADE.get() ||
+                item == GTItems.BASIC_EFFICIENCY_UPGRADE.get() ||
+                item == GTItems.ADVANCED_EFFICIENCY_UPGRADE.get() ||
+                item == GTItems.ULTIMATE_EFFICIENCY_UPGRADE.get();
+    }
+
+    public float getProgressLevel() {
+        if (maxProgress == 0) return 0.0f;
+        return (float) progress / (float) maxProgress;
+    }
+
+    public Block getTargetBlock() {
+        return targetBlock;
+    }
+
+    public BlockCategory getTargetCategory() {
+        return targetCategory;
+    }
+
     private GeneratorTier determineTier(BlockState blockState) {
         if (blockState.getBlock() instanceof CopperGeneratorBlock) {
             return GeneratorTier.COPPER;
@@ -149,10 +407,9 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         } else if (blockState.getBlock() instanceof NetheriteGeneratorBlock) {
             return GeneratorTier.NETHERITE;
         }
-        return GeneratorTier.COPPER; // Fallback
+        return GeneratorTier.COPPER;
     }
 
-    // Get upgrade slot count for tier
     private int getUpgradeSlotsForTier(GeneratorTier tier) {
         return switch (tier) {
             case COPPER -> COPPER_UPGRADE_SLOTS;
@@ -162,7 +419,6 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         };
     }
 
-    // Get fluid capacity from config based on tier
     private int getFluidCapacityForTier(GeneratorTier tier) {
         return switch (tier) {
             case COPPER -> Config.getCopperGeneratorFluidBuffer();
@@ -172,12 +428,9 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         };
     }
 
-    // Create side-specific fluid handler for capability system
     private IFluidHandler createSideFluidHandler(Direction side) {
-        // Get the actual facing direction of the block
         Direction facing = getBlockState().getValue(CopperGeneratorBlock.FACING);
 
-        // Convert relative side to absolute direction
         Direction absoluteSide = getAbsoluteSide(facing, side);
 
         return switch (absoluteSide) {
@@ -188,15 +441,13 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         };
     }
 
-    // Convert relative side to absolute direction based on block facing
     private Direction getAbsoluteSide(Direction facing, Direction side) {
         if (side == Direction.UP || side == Direction.DOWN) {
-            return side; // Top/bottom are always absolute
+            return side;
         }
 
-        // Rotate the side based on the block's facing direction
         return switch (facing) {
-            case NORTH -> side; // No rotation needed
+            case NORTH -> side;
             case SOUTH -> side.getOpposite();
             case EAST -> side.getClockWise();
             case WEST -> side.getCounterClockWise();
@@ -204,7 +455,6 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         };
     }
 
-    // Getters
     public GeneratorTier getTier() {
         return tier;
     }
@@ -225,46 +475,38 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         return lavaTank;
     }
 
-    // Get water amount for GUI syncing
     public int getWaterAmount() {
         return waterTank.getFluidAmount();
     }
 
-    // Get water capacity for GUI syncing
     public int getWaterCapacity() {
         return waterTank.getCapacity();
     }
 
-    // Get lava amount for GUI syncing
     public int getLavaAmount() {
         return lavaTank.getFluidAmount();
     }
 
-    // Get lava capacity for GUI syncing
     public int getLavaCapacity() {
         return lavaTank.getCapacity();
     }
 
-    // Get water level as percentage (0.0 to 1.0) for GUI
     public float getWaterLevel() {
         if (waterTank.getCapacity() == 0) return 0.0f;
         return (float) waterTank.getFluidAmount() / (float) waterTank.getCapacity();
     }
 
-    // Get lava level as percentage (0.0 to 1.0) for GUI
     public float getLavaLevel() {
         if (lavaTank.getCapacity() == 0) return 0.0f;
         return (float) lavaTank.getFluidAmount() / (float) lavaTank.getCapacity();
     }
 
-    // Test method to add fluids for testing (remove in production)
     public void addTestFluids() {
         waterTank.fill(new FluidStack(Fluids.WATER, 5000), IFluidHandler.FluidAction.EXECUTE);
         lavaTank.fill(new FluidStack(Fluids.LAVA, 7500), IFluidHandler.FluidAction.EXECUTE);
         setChanged();
     }
 
-    // MenuProvider implementation
     @Override
     public Component getDisplayName() {
         return Component.translatable("block.gentech." + tier.name().toLowerCase() + "_generator");
@@ -276,7 +518,6 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         return new GeneratorMenu(containerId, playerInventory, this);
     }
 
-    // NBT Save/Load
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
@@ -284,6 +525,17 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         tag.put("waterTank", waterTank.writeToNBT(registries, new CompoundTag()));
         tag.put("lavaTank", lavaTank.writeToNBT(registries, new CompoundTag()));
         tag.putString("tier", tier.name());
+        tag.putInt("progress", progress);
+        tag.putInt("maxProgress", maxProgress);
+
+        if (targetBlock != null) {
+            ResourceLocation blockLocation = BuiltInRegistries.BLOCK.getKey(targetBlock);
+            tag.putString("targetBlock", blockLocation.toString());
+        }
+
+        if (targetCategory != null) {
+            tag.putString("targetCategory", targetCategory.name());
+        }
     }
 
     @Override
@@ -303,36 +555,49 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
                 this.tier = GeneratorTier.valueOf(tag.getString("tier"));
                 this.upgradeSlots = getUpgradeSlotsForTier(this.tier);
             } catch (IllegalArgumentException e) {
-                // Fallback to block-based detection if NBT is invalid
                 this.tier = determineTier(getBlockState());
                 this.upgradeSlots = getUpgradeSlotsForTier(this.tier);
             }
         }
+
+        this.progress = tag.getInt("progress");
+        this.maxProgress = tag.getInt("maxProgress");
+
+        if (tag.contains("targetBlock")) {
+            try {
+                ResourceLocation blockLocation = ResourceLocation.parse(tag.getString("targetBlock"));
+                this.targetBlock = BuiltInRegistries.BLOCK.get(blockLocation);
+            } catch (Exception e) {
+                this.targetBlock = null;
+            }
+        }
+
+        if (tag.contains("targetCategory")) {
+            try {
+                this.targetCategory = BlockCategory.valueOf(tag.getString("targetCategory"));
+            } catch (IllegalArgumentException e) {
+                this.targetCategory = null;
+            }
+        }
     }
 
-    // Capability provider method - to be called from block registration
     public @Nullable IFluidHandler getFluidHandler(Direction side) {
-        // Handle null direction (usually means internal access)
         if (side == null) {
-            // Return a combined handler for internal access
             return new CombinedFluidHandler(waterTank, lavaTank);
         }
         return createSideFluidHandler(side);
     }
 
-    // Static capability registration method
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, GTBlockEntities.GENERATOR_BLOCK_ENTITY.get(),
                 (blockEntity, direction) -> {
                     if (blockEntity instanceof GeneratorBlockEntity generatorBlockEntity) {
-                        IFluidHandler handler = generatorBlockEntity.getFluidHandler(direction);
-                        return handler;
+                        return generatorBlockEntity.getFluidHandler(direction);
                     }
                     return null;
                 });
     }
 
-    // Helper classes for restricted fluid access
     private static class CombinedFluidHandler implements IFluidHandler {
         private final FluidTank waterTank;
         private final FluidTank lavaTank;
@@ -396,7 +661,6 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public FluidStack drain(int maxDrain, FluidAction action) {
-            // Try water first, then lava
             FluidStack drained = waterTank.drain(maxDrain, action);
             if (drained.isEmpty()) {
                 drained = lavaTank.drain(maxDrain, action);
@@ -428,17 +692,17 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public int fill(FluidStack resource, FluidAction action) {
-            return 0; // No input allowed
+            return 0;
         }
 
         @Override
         public FluidStack drain(FluidStack resource, FluidAction action) {
-            return FluidStack.EMPTY; // No output on these sides for now
+            return FluidStack.EMPTY;
         }
 
         @Override
         public FluidStack drain(int maxDrain, FluidAction action) {
-            return FluidStack.EMPTY; // No output on these sides for now
+            return FluidStack.EMPTY;
         }
     }
 
@@ -484,7 +748,6 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         super.setChanged();
         if (level != null && !level.isClientSide()) {
             level.invalidateCapabilities(getBlockPos());
-            // Force sync when data changes
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
         }
     }
@@ -497,8 +760,11 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         }
     }
 
-    // Enum for generator tiers
     public enum GeneratorTier {
         COPPER, IRON, DIAMOND, NETHERITE
+    }
+
+    public enum BlockCategory {
+        SOFT, MEDIUM, HARD
     }
 }
