@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "D": {
+      "item": "minecraft:diamond_block"
+    },
+    "I": {
+      "item": "gentech:iron_generator"
+    }
+  },
+  "pattern": [
+    "DDD",
+    "BIB",
+    "DDD"
+  ],
+  "result": {
+    "count": 1,
+    "id": "gentech:diamond_generator"
+  }
+}

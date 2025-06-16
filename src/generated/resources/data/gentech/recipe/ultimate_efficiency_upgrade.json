@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "E": {
+      "item": "gentech:advanced_efficiency_upgrade"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    }
+  },
+  "pattern": [
+    "NCN",
+    "CEC",
+    "NCN"
+  ],
+  "result": {
+    "count": 1,
+    "id": "gentech:ultimate_efficiency_upgrade"
+  }
+}

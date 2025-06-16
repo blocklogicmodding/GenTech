@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:block/cube",
   "textures": {
-    "north": "gentech:block/diamond_gen_north_south",
-    "south": "gentech:block/diamond_gen_north_south",
-    "east": "gentech:block/diamond_gen_north_east",
-    "west": "gentech:block/diamond_gen_north_west",
+    "north": "gentech:block/diamond_gen_north_south_side",
+    "south": "gentech:block/diamond_gen_north_south_side",
+    "east": "gentech:block/diamond_gen_east_side",
+    "west": "gentech:block/diamond_gen_west_side",
     "up": "gentech:block/diamond_gen_top_bottom",
     "down": "gentech:block/diamond_gen_top_bottom",
-    "particle": "gentech:block/diamond_gen_north_south"
+    "particle": "gentech:block/diamond_gen_north_south_side"
   }
 }

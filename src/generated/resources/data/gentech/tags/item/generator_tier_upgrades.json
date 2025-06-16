@@ -1,0 +1,7 @@
+{
+  "values": [
+    "gentech:copper_to_iron_generator_upgrade",
+    "gentech:iron_to_diamond_generator_upgrade",
+    "gentech:diamond_to_netherite_generator_upgrade"
+  ]
+}

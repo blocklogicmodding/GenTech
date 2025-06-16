@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_efficiency_upgrade_mk2": {
+      "conditions": {
+        "items": [
+          {
+            "items": "gentech:advanced_efficiency_upgrade"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "gentech:ultimate_efficiency_upgrade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_efficiency_upgrade_mk2"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "gentech:ultimate_efficiency_upgrade"
+    ]
+  }
+}

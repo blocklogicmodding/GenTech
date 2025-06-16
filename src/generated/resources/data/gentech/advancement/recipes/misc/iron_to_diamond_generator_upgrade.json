@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_iron_generator": {
+      "conditions": {
+        "items": [
+          {
+            "items": "gentech:iron_generator"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "gentech:iron_to_diamond_generator_upgrade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_iron_generator"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "gentech:iron_to_diamond_generator_upgrade"
+    ]
+  }
+}

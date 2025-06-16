@@ -1,0 +1,5 @@
+// 1.21.1	2025-06-16T14:22:35.484389	Loot Tables
+453bd6e220a29bdee8ce0c715711c96f7e269d52 data/gentech/loot_table/blocks/copper_generator.json
+d2229b74f2bd3eedf7ef75d0a93b3b3566b76939 data/gentech/loot_table/blocks/diamond_generator.json
+21b220eabca2f40abba5082cc72d6bef14fd6f34 data/gentech/loot_table/blocks/iron_generator.json
+8f6f0ffcf5ad557b9386f0fcdc2f7236ae21e977 data/gentech/loot_table/blocks/netherite_generator.json

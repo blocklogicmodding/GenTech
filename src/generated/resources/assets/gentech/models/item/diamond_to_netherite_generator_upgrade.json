@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "gentech:item/diamond_to_netherite_generator_upgrade"
+  }
+}

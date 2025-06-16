@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_speed_upgrade_mk1": {
+      "conditions": {
+        "items": [
+          {
+            "items": "gentech:basic_speed_upgrade"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "gentech:advanced_speed_upgrade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_speed_upgrade_mk1"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "gentech:advanced_speed_upgrade"
+    ]
+  }
+}

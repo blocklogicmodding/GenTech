@@ -1,0 +1,10 @@
+{
+  "values": [
+    "gentech:basic_efficiency_upgrade",
+    "gentech:advanced_efficiency_upgrade",
+    "gentech:ultimate_efficiency_upgrade",
+    "gentech:basic_speed_upgrade",
+    "gentech:advanced_speed_upgrade",
+    "gentech:ultimate_speed_upgrade"
+  ]
+}

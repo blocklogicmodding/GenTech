@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "C": {
+      "item": "minecraft:copper_block"
+    },
+    "G": {
+      "tag": "c:glass_blocks"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "BGB",
+    "CCC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "gentech:copper_generator"
+  }
+}

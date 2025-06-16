@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "E": {
+      "item": "gentech:basic_efficiency_upgrade"
+    }
+  },
+  "pattern": [
+    "DCD",
+    "CEC",
+    "DCD"
+  ],
+  "result": {
+    "count": 1,
+    "id": "gentech:advanced_efficiency_upgrade"
+  }
+}

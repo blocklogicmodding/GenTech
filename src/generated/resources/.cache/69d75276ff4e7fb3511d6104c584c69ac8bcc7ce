@@ -1,0 +1,10 @@
+// 1.21.1	2025-06-16T14:22:35.4888529	Item Models: gentech
+6dfc461a5bdbce1c9fc05d84845d25d0ed3b2ced assets/gentech/models/item/advanced_efficiency_upgrade.json
+83f9a00a4e1fce3ea01a3d75e8f1caa22b632855 assets/gentech/models/item/advanced_speed_upgrade.json
+9f10cea24060481afe05108907ccc4eff71819fc assets/gentech/models/item/basic_efficiency_upgrade.json
+a544df986c3f2c2d29a8b8cc4c887a6a0ce3e345 assets/gentech/models/item/basic_speed_upgrade.json
+8b4b068dc7ed99bbf7681adddc766b12d38dd8eb assets/gentech/models/item/copper_to_iron_generator_upgrade.json
+41b878efd2fffb4f57b6e885b47cd45945153777 assets/gentech/models/item/diamond_to_netherite_generator_upgrade.json
+f9fd0ac799d59fced7030d18de1ddb6f936957ac assets/gentech/models/item/iron_to_diamond_generator_upgrade.json
+abd946a7431270fd188a51cfd055e23f2d3d2fef assets/gentech/models/item/ultimate_efficiency_upgrade.json
+927ef8107ca76f2d54de17feff5be4805ac8a491 assets/gentech/models/item/ultimate_speed_upgrade.json
