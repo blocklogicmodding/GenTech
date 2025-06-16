@@ -30,6 +30,7 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -115,6 +116,62 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         };
     }
 
+    public @Nullable IItemHandler getItemHandler(Direction side) {
+        if (side == null) {
+            return itemHandler;
+        }
+
+        Direction facing = getBlockState().getValue(CopperGeneratorBlock.FACING);
+        Direction absoluteSide = getAbsoluteSide(facing, side);
+
+        if (absoluteSide == Direction.NORTH || absoluteSide == Direction.SOUTH) {
+            return new OutputOnlyItemHandler(itemHandler);
+        }
+
+        return null;
+    }
+
+    private static class OutputOnlyItemHandler implements IItemHandler {
+        private final ItemStackHandler internal;
+
+        public OutputOnlyItemHandler(ItemStackHandler internal) {
+            this.internal = internal;
+        }
+
+        @Override
+        public int getSlots() {
+            return OUTPUT_SLOTS;
+        }
+
+        @Override
+        public ItemStack getStackInSlot(int slot) {
+            if (slot >= OUTPUT_SLOTS) return ItemStack.EMPTY;
+            return internal.getStackInSlot(slot);
+        }
+
+        @Override
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            return stack;
+        }
+
+        @Override
+        public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            if (slot >= OUTPUT_SLOTS) return ItemStack.EMPTY;
+            return internal.extractItem(slot, amount, simulate);
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            if (slot >= OUTPUT_SLOTS) return 0;
+            return internal.getSlotLimit(slot);
+        }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            return false;
+        }
+    }
+
     public static void tick(Level level, BlockPos pos, BlockState state, GeneratorBlockEntity blockEntity) {
         if (level.isClientSide()) {
             return;
@@ -159,6 +216,10 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         blockEntity.setChanged();
+
+        if (level.getGameTime() % 10 == 0) {
+            blockEntity.tryPushItemsToChestAbove();
+        }
     }
 
     private void validateTargetBlock() {
@@ -596,6 +657,14 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
                     }
                     return null;
                 });
+
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, GTBlockEntities.GENERATOR_BLOCK_ENTITY.get(),
+                (blockEntity, direction) -> {
+                    if (blockEntity instanceof GeneratorBlockEntity generatorBlockEntity) {
+                        return generatorBlockEntity.getItemHandler(direction);
+                    }
+                    return null;
+                });
     }
 
     private static class CombinedFluidHandler implements IFluidHandler {
@@ -741,6 +810,41 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         public FluidStack drain(int maxDrain, FluidAction action) {
             return FluidStack.EMPTY;
         }
+    }
+
+    private void tryPushItemsToChestAbove() {
+        if (level == null || level.isClientSide()) return;
+
+        BlockPos abovePos = worldPosition.above();
+
+        IItemHandler chestHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, abovePos, Direction.DOWN);
+
+        if (chestHandler != null) {
+            for (int i = 0; i < OUTPUT_SLOTS; i++) {
+                ItemStack outputStack = itemHandler.getStackInSlot(i);
+                if (!outputStack.isEmpty()) {
+                    ItemStack remaining = insertItemIntoHandler(chestHandler, outputStack, false);
+
+                    if (remaining.getCount() != outputStack.getCount()) {
+                        itemHandler.setStackInSlot(i, remaining);
+                        setChanged();
+                    }
+                }
+            }
+        }
+    }
+
+    private ItemStack insertItemIntoHandler(IItemHandler handler, ItemStack stack, boolean simulate) {
+        ItemStack remaining = stack.copy();
+
+        for (int slot = 0; slot < handler.getSlots(); slot++) {
+            remaining = handler.insertItem(slot, remaining, simulate);
+            if (remaining.isEmpty()) {
+                break;
+            }
+        }
+
+        return remaining;
     }
 
     @Override
