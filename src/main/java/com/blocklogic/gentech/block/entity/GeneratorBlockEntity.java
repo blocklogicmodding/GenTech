@@ -903,18 +903,6 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
                 Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), stack);
             }
         }
-
-        ItemStack generatorStack = new ItemStack(getBlockState().getBlock());
-
-        int waterAmount = getWaterAmount();
-        int lavaAmount = getLavaAmount();
-
-        if (waterAmount > 0 || lavaAmount > 0) {
-            generatorStack.set(GTDataComponents.FLUID_DATA.get(),
-                    new GTDataComponents.FluidData(waterAmount, lavaAmount));
-        }
-
-        Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), generatorStack);
     }
 
     @Nullable
