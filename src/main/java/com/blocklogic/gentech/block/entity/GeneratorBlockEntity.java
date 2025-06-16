@@ -562,8 +562,8 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         Direction absoluteSide = getAbsoluteSide(facing, side);
 
         return switch (absoluteSide) {
-            case WEST -> waterTank;
-            case EAST -> lavaTank;
+            case EAST -> waterTank;
+            case WEST -> lavaTank;
             case NORTH, SOUTH -> new NoInputFluidHandler();
             default -> new NoAccessFluidHandler();
         };

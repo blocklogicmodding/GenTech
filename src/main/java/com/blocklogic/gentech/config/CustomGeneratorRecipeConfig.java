@@ -18,6 +18,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 public class CustomGeneratorRecipeConfig {
@@ -31,6 +32,11 @@ public class CustomGeneratorRecipeConfig {
 
     private static Map<String, CustomGeneratorRecipe> loadedRecipes = new LinkedHashMap<>();
     private static Map<String, List<CustomGeneratorRecipe>> recipesByBlock = new HashMap<>();
+
+    // Error tracking - only used when errors occur
+    private static final AtomicInteger errorCounter = new AtomicInteger(0);
+    private static Path currentErrorFile = null;
+    private static final List<String> currentSessionErrors = new ArrayList<>();
 
     public static class CustomGeneratorRecipe {
         public final String name;
@@ -49,6 +55,11 @@ public class CustomGeneratorRecipeConfig {
     }
 
     public static void loadRecipes() {
+        // Reset error tracking for this session
+        currentSessionErrors.clear();
+        errorCounter.set(0);
+        currentErrorFile = null;
+
         loadedRecipes.clear();
         recipesByBlock.clear();
 
@@ -71,6 +82,15 @@ public class CustomGeneratorRecipeConfig {
         } catch (Exception e) {
             LOGGER.error("Failed to load custom generator recipes: {}", e.getMessage(), e);
             logError("Critical error loading recipes file", e.getMessage(), 0);
+        }
+
+        // Only show error summary and create log if there were actual errors
+        if (!currentSessionErrors.isEmpty()) {
+            LOGGER.warn("Recipe loading completed with {} errors. Check error log: {}",
+                    currentSessionErrors.size(), currentErrorFile);
+            finalizeErrorLog();
+        } else {
+            LOGGER.info("Recipe loading completed successfully with no errors.");
         }
 
         LOGGER.info("Loaded {} custom generator recipes", loadedRecipes.size());
@@ -100,6 +120,8 @@ public class CustomGeneratorRecipeConfig {
 
                 String blockKey = BuiltInRegistries.BLOCK.getKey(block).toString();
                 recipesByBlock.computeIfAbsent(blockKey, k -> new ArrayList<>()).add(recipe);
+            } else {
+                logError("Default recipe generation", "Failed to parse block: " + blockId, 0);
             }
         }
     }
@@ -120,6 +142,14 @@ public class CustomGeneratorRecipeConfig {
                 # Categories determine generation speed and fluid consumption (see main config)
                 # Multiple recipes can use the same catalyst with different fluids
                 # Conflicts resolved alphabetically by recipe name
+                
+                # Example custom recipe (commented out):
+                # [[recipes]]
+                # name = "custom_obsidian_recipe"
+                # catalyst = "minecraft:obsidian"
+                # fluid1 = "minecraft:water"
+                # fluid2 = "minecraft:lava"
+                # category = "hard"
                 """;
 
         Files.writeString(recipesFile, defaultContent);
@@ -155,6 +185,7 @@ public class CustomGeneratorRecipeConfig {
 
         for (String line : lines) {
             lineNumber++;
+            String originalLine = line;
             line = line.trim();
 
             if (line.isEmpty() || line.startsWith("#")) {
@@ -181,8 +212,10 @@ public class CustomGeneratorRecipeConfig {
 
                     currentRecipe.put(key, value);
                 } else {
-                    logError("Invalid line format", "Line: " + line, lineNumber);
+                    logError("TOML parsing error", "Invalid line format: " + originalLine, lineNumber);
                 }
+            } else if (currentRecipe != null) {
+                logError("TOML parsing error", "Unexpected line outside recipe section: " + originalLine, lineNumber);
             }
         }
 
@@ -251,7 +284,13 @@ public class CustomGeneratorRecipeConfig {
 
         try {
             ResourceLocation location = ResourceLocation.parse(blockId);
-            return BuiltInRegistries.BLOCK.get(location);
+            Block block = BuiltInRegistries.BLOCK.get(location);
+
+            if (block == null || block == net.minecraft.world.level.block.Blocks.AIR) {
+                return null;
+            }
+
+            return block;
         } catch (Exception e) {
             return null;
         }
@@ -264,15 +303,49 @@ public class CustomGeneratorRecipeConfig {
 
         try {
             ResourceLocation location = ResourceLocation.parse(fluidId);
-            return BuiltInRegistries.FLUID.get(location);
+            Fluid fluid = BuiltInRegistries.FLUID.get(location);
+
+            if (fluid == null || fluid == net.minecraft.world.level.material.Fluids.EMPTY) {
+                return null;
+            }
+
+            return fluid;
         } catch (Exception e) {
             return null;
         }
     }
 
+    // ONLY called when there's an actual error
     private static void logError(String errorType, String message, int lineNumber) {
-        LOGGER.error("[GenTech Recipe Error] {}: {} {}", errorType, message, lineNumber > 0 ? "(Line: " + lineNumber + ")" : "");
+        int errorNum = errorCounter.incrementAndGet();
+        String fullMessage = String.format("[Error #%d] %s: %s%s",
+                errorNum, errorType, message, lineNumber > 0 ? " (Line: " + lineNumber + ")" : "");
 
+        LOGGER.error("[GenTech Recipe Error] {}", fullMessage);
+        currentSessionErrors.add(fullMessage);
+
+        // Initialize error logging ONLY when we have our first error
+        if (currentErrorFile == null) {
+            initializeErrorLogging();
+        }
+
+        // Write to error file if initialization succeeded
+        if (currentErrorFile != null) {
+            try {
+                String logEntry = String.format("[%s] %s%n",
+                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                        fullMessage);
+
+                Files.writeString(currentErrorFile, logEntry,
+                        StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+
+            } catch (IOException e) {
+                LOGGER.error("Failed to write to error log file: {}", e.getMessage());
+            }
+        }
+    }
+
+    private static void initializeErrorLogging() {
         try {
             Path configDir = FMLPaths.CONFIGDIR.get().resolve(CONFIG_DIR);
             Path errorDir = configDir.resolve(ERROR_DIR);
@@ -282,22 +355,45 @@ public class CustomGeneratorRecipeConfig {
             }
 
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
-            Path errorFile = errorDir.resolve(timestamp + "_recipe_errors.log");
+            currentErrorFile = errorDir.resolve(timestamp + "_recipe_errors.log");
 
-            String logEntry = String.format("[%s] %s: %s%s%n",
+            String header = String.format("=== GenTech Recipe Error Log ===%n" +
+                            "Session started: %s%n" +
+                            "Config file: %s%n" +
+                            "========================================%n%n",
                     LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                    errorType,
-                    message,
-                    lineNumber > 0 ? " (Line: " + lineNumber + ")" : "");
+                    FMLPaths.CONFIGDIR.get().resolve(CONFIG_DIR).resolve(RECIPES_FILE));
 
-            Files.writeString(errorFile, logEntry,
-                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            Files.writeString(currentErrorFile, header, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
-        } catch (IOException e) {
-            LOGGER.error("Failed to write error log: {}", e.getMessage());
+        } catch (Exception e) {
+            LOGGER.error("Failed to initialize error logging: {}", e.getMessage(), e);
+            currentErrorFile = null;
         }
     }
 
+    private static void finalizeErrorLog() {
+        if (currentErrorFile != null) {
+            try {
+                String footer = String.format("%n========================================%n" +
+                                "Session completed: %s%n" +
+                                "Total errors: %d%n" +
+                                "Total recipes loaded: %d%n" +
+                                "========================================%n",
+                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                        currentSessionErrors.size(),
+                        loadedRecipes.size());
+
+                Files.writeString(currentErrorFile, footer,
+                        StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+
+            } catch (IOException e) {
+                LOGGER.error("Failed to finalize error log: {}", e.getMessage());
+            }
+        }
+    }
+
+    // Public API methods
     public static List<CustomGeneratorRecipe> getRecipesForBlock(Block block) {
         String blockKey = BuiltInRegistries.BLOCK.getKey(block).toString();
         return recipesByBlock.getOrDefault(blockKey, Collections.emptyList());
@@ -309,5 +405,18 @@ public class CustomGeneratorRecipeConfig {
 
     public static boolean hasRecipes() {
         return !loadedRecipes.isEmpty();
+    }
+
+    // Debug methods for commands
+    public static int getErrorCount() {
+        return currentSessionErrors.size();
+    }
+
+    public static List<String> getCurrentSessionErrors() {
+        return new ArrayList<>(currentSessionErrors);
+    }
+
+    public static Path getCurrentErrorLogFile() {
+        return currentErrorFile;
     }
 }

@@ -28,9 +28,8 @@
   "tooltip.gentech.water_input_side": "Input: West Side",
   "tooltip.gentech.lava_input_side": "Input: East Side",
   "tooltip.gentech.progress_percentage": "%s%% Complete",
-  "tooltip.gentech.generating_category": "Generating: %s",
   "tooltip.gentech.status.idle": "Idle",
-  "tooltip.gentech.place_above_block": "Place above a valid block to generate",
+  "tooltip.gentech.place_above_block": "Place a valid block under the Generator",
 
   "_comment_block_categories": "Block Categories - Used in GeneratorScreen",
   "tooltip.gentech.category.soft": "Soft Block",
