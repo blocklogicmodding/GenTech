@@ -178,5 +178,10 @@
 
   "_comment_rei": "REI Integration",
   "rei.gentech.category.generation": "Block Generation",
-  "rei.gentech.generation.info": "Generator must be placed above the block"
+  "rei.gentech.generation.info": "Generator must be placed above the block",
+
+  "_comment_fluid_persistence": "Fluid Persistence Tooltips",
+  "tooltip.gentech.stored_fluids": "Stored Fluids:",
+  "tooltip.gentech.stored_water": "Water: %s mB",
+  "tooltip.gentech.stored_lava": "Lava: %s mB"
 }

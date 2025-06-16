@@ -7,6 +7,7 @@ import com.blocklogic.gentech.block.custom.IronGeneratorBlock;
 import com.blocklogic.gentech.block.custom.NetheriteGeneratorBlock;
 import com.blocklogic.gentech.block.entity.GTBlockEntities;
 import com.blocklogic.gentech.block.entity.GeneratorBlockEntity;
+import com.blocklogic.gentech.component.GTDataComponents;
 import com.blocklogic.gentech.item.GTCreativeTab;
 import com.blocklogic.gentech.item.GTItems;
 import com.blocklogic.gentech.screen.GTMenuTypes;
@@ -65,6 +66,7 @@ public class GenTech {
         GTCreativeTab.register(modEventBus);
         GTBlockEntities.register(modEventBus);
         GTMenuTypes.register(modEventBus);
+        GTDataComponents.register(modEventBus);
 
         modEventBus.addListener(this::addCreative);
 

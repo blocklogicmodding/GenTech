@@ -5,6 +5,7 @@ import com.blocklogic.gentech.block.custom.CopperGeneratorBlock;
 import com.blocklogic.gentech.block.custom.DiamondGeneratorBlock;
 import com.blocklogic.gentech.block.custom.IronGeneratorBlock;
 import com.blocklogic.gentech.block.custom.NetheriteGeneratorBlock;
+import com.blocklogic.gentech.component.GTDataComponents;
 import com.blocklogic.gentech.item.GTItems;
 import com.blocklogic.gentech.screen.custom.GeneratorMenu;
 import net.minecraft.core.BlockPos;
@@ -13,7 +14,11 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -334,6 +339,23 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         }
     }
 
+    public void restoreFluidData(GTDataComponents.FluidData fluidData) {
+        if (fluidData.waterAmount() > 0) {
+            FluidStack waterStack = new FluidStack(Fluids.WATER, fluidData.waterAmount());
+            waterTank.fill(waterStack, IFluidHandler.FluidAction.EXECUTE);
+        }
+
+        if (fluidData.lavaAmount() > 0) {
+            FluidStack lavaStack = new FluidStack(Fluids.LAVA, fluidData.lavaAmount());
+            lavaTank.fill(lavaStack, IFluidHandler.FluidAction.EXECUTE);
+        }
+
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+        }
+    }
+
     private int getBaseGenerationTime() {
         if (targetCategory == null) return 100;
 
@@ -495,8 +517,8 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         Direction absoluteSide = getAbsoluteSide(facing, side);
 
         return switch (absoluteSide) {
-            case WEST -> waterTank;
-            case EAST -> lavaTank;
+            case EAST -> waterTank;
+            case WEST -> lavaTank;
             case NORTH, SOUTH -> new NoInputFluidHandler();
             default -> new NoAccessFluidHandler();
         };
@@ -870,5 +892,39 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
 
     public enum BlockCategory {
         SOFT, MEDIUM, HARD
+    }
+
+    public void drops() {
+        if (level == null || level.isClientSide()) return;
+
+        for (int i = 0; i < itemHandler.getSlots(); i++) {
+            ItemStack stack = itemHandler.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), stack);
+            }
+        }
+
+        ItemStack generatorStack = new ItemStack(getBlockState().getBlock());
+
+        int waterAmount = getWaterAmount();
+        int lavaAmount = getLavaAmount();
+
+        if (waterAmount > 0 || lavaAmount > 0) {
+            generatorStack.set(GTDataComponents.FLUID_DATA.get(),
+                    new GTDataComponents.FluidData(waterAmount, lavaAmount));
+        }
+
+        Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), generatorStack);
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider pRegistries) {
+        return saveWithoutMetadata(pRegistries);
     }
 }
