@@ -66,8 +66,6 @@ public class GenerationRecipe implements IRecipeCategoryExtension {
                 LogUtils.getLogger().error("Failed to create generation recipe: Block not found for ID: {}", blockId);
                 throw new IllegalArgumentException("Block not found for ID: " + blockId);
             }
-
-            // Get base values for copper generator (most basic tier)
             int waterAmount = getWaterConsumption(category);
             int lavaAmount = getLavaConsumption(category);
             int generationTime = getGenerationTime(category);

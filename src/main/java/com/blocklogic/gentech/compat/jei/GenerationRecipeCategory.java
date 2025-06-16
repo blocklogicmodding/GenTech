@@ -73,7 +73,7 @@ public class GenerationRecipeCategory implements IRecipeCategory<GenerationRecip
 
         builder.addSlot(RecipeIngredientRole.INPUT, 6, 16)
                 .addFluidStack(recipe.getWaterStack().getFluid(), recipe.getWaterStack().getAmount())
-                .setFluidRenderer(1000, false, 16, 16)
+                .setFluidRenderer(100, false, 16, 16)
                 .addTooltipCallback((view, tooltip) -> {
                     tooltip.add(Component.translatable("jei.gentech.generation.water",
                             String.format("%,d", recipe.getWaterStack().getAmount())));
@@ -81,7 +81,7 @@ public class GenerationRecipeCategory implements IRecipeCategory<GenerationRecip
 
         builder.addSlot(RecipeIngredientRole.INPUT, 50, 16)
                 .addFluidStack(recipe.getLavaStack().getFluid(), recipe.getLavaStack().getAmount())
-                .setFluidRenderer(1000, false, 16, 16)
+                .setFluidRenderer(100, false, 16, 16)
                 .addTooltipCallback((view, tooltip) -> {
                     tooltip.add(Component.translatable("jei.gentech.generation.lava",
                             String.format("%,d", recipe.getLavaStack().getAmount())));

@@ -9,7 +9,7 @@
       "item": "minecraft:redstone"
     },
     "S": {
-      "item": "gentech:ultimate_speed_upgrade"
+      "item": "gentech:advanced_speed_upgrade"
     }
   },
   "pattern": [

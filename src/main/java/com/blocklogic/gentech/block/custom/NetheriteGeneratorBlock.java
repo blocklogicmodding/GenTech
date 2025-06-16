@@ -4,12 +4,15 @@ import com.blocklogic.gentech.Config;
 import com.blocklogic.gentech.block.entity.GTBlockEntities;
 import com.blocklogic.gentech.block.entity.GeneratorBlockEntity;
 import com.blocklogic.gentech.component.GTDataComponents;
+import com.blocklogic.gentech.util.GeneratorUpgradeHandler;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -73,6 +76,19 @@ public class NetheriteGeneratorBlock extends BaseEntityBlock {
     @Override
     protected RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (GeneratorUpgradeHandler.isGeneratorUpgradeItem(stack)) {
+            if (GeneratorUpgradeHandler.tryUpgradeGenerator(level, pos, player, stack)) {
+                return ItemInteractionResult.SUCCESS;
+            } else {
+                return ItemInteractionResult.FAIL;
+            }
+        }
+
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override

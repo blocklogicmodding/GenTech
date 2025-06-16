@@ -96,7 +96,7 @@ public class GTRecipeProvider extends RecipeProvider implements IConditionBuilde
                 .pattern("IRI")
                 .pattern("RSR")
                 .pattern("IRI")
-                .define('I', Items.IRON_INGOT)
+                .define('I', Items.IRON_BLOCK)
                 .define('R', Items.REDSTONE)
                 .define('S', Items.SUGAR)
                 .unlockedBy("has_redstone", has(Items.REDSTONE))
@@ -106,7 +106,7 @@ public class GTRecipeProvider extends RecipeProvider implements IConditionBuilde
                 .pattern("DRD")
                 .pattern("RSR")
                 .pattern("DRD")
-                .define('D', Items.DIAMOND)
+                .define('D', Items.DIAMOND_BLOCK)
                 .define('R', Items.REDSTONE)
                 .define('S', GTItems.BASIC_SPEED_UPGRADE.get())
                 .unlockedBy("has_speed_upgrade_mk1", has(GTItems.BASIC_SPEED_UPGRADE.get()))
@@ -118,8 +118,8 @@ public class GTRecipeProvider extends RecipeProvider implements IConditionBuilde
                 .pattern("NRN")
                 .define('N', Items.NETHERITE_INGOT)
                 .define('R', Items.REDSTONE)
-                .define('S', GTItems.ULTIMATE_SPEED_UPGRADE.get())
-                .unlockedBy("has_speed_upgrade_mk2", has(GTItems.ULTIMATE_SPEED_UPGRADE.get()))
+                .define('S', GTItems.ADVANCED_SPEED_UPGRADE.get())
+                .unlockedBy("has_speed_upgrade_mk2", has(GTItems.ADVANCED_SPEED_UPGRADE.get()))
                 .save(recipeOutput);
 
         // Efficiency Upgrade Recipes
@@ -127,7 +127,7 @@ public class GTRecipeProvider extends RecipeProvider implements IConditionBuilde
                 .pattern("ICI")
                 .pattern("CQC")
                 .pattern("ICI")
-                .define('I', Items.IRON_INGOT)
+                .define('I', Items.IRON_BLOCK)
                 .define('C', Items.COPPER_INGOT)
                 .define('Q', Items.QUARTZ)
                 .unlockedBy("has_copper_ingot", has(Items.COPPER_INGOT))
@@ -138,7 +138,7 @@ public class GTRecipeProvider extends RecipeProvider implements IConditionBuilde
                 .pattern("CEC")
                 .pattern("DCD")
                 .define('C', Items.COPPER_INGOT)
-                .define('D', Items.DIAMOND)
+                .define('D', Items.DIAMOND_BLOCK)
                 .define('E', GTItems.BASIC_EFFICIENCY_UPGRADE.get())
                 .unlockedBy("has_efficiency_upgrade_mk1", has(GTItems.BASIC_EFFICIENCY_UPGRADE.get()))
                 .save(recipeOutput);
