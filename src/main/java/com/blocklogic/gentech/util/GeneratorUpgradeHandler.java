@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -140,7 +141,7 @@ public class GeneratorUpgradeHandler {
 
             for (int i = itemHandler.getSlots(); i < data.items.length; i++) {
                 if (!data.items[i].isEmpty()) {
-                    net.minecraft.world.Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), data.items[i]);
+                    Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), data.items[i]);
                 }
             }
         }

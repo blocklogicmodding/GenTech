@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.neoforged.bus.api.IEventBus;
@@ -28,7 +29,7 @@ public class GTDataComponents {
                         Codec.INT.fieldOf("lava_amount").forGetter(FluidData::lavaAmount)
                 ).apply(instance, FluidData::new));
 
-        public static final StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, FluidData> STREAM_CODEC = StreamCodec.composite(
+        public static final StreamCodec<RegistryFriendlyByteBuf, FluidData> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.INT, FluidData::waterAmount,
                 ByteBufCodecs.INT, FluidData::lavaAmount,
                 FluidData::new);
