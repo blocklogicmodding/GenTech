@@ -29,7 +29,6 @@ public class DataGenerators {
                 List.of(new LootTableProvider.SubProviderEntry(GTBlockLootTableProvider::new, LootContextParamSets.BLOCK)), lookupProvider));
 
         generator.addProvider(event.includeClient(), new GTItemModelProvider(packOutput, existingFileHelper));
-        //generator.addProvider(event.includeClient(), new GTBlockStateProvider(packOutput, existingFileHelper));
 
         BlockTagsProvider blockTagsProvider = new GTBlockTagProvider(packOutput, lookupProvider, existingFileHelper);
         generator.addProvider(event.includeServer(), blockTagsProvider);
