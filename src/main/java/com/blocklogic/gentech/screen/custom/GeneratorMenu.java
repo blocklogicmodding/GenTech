@@ -6,17 +6,24 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
 public class GeneratorMenu extends AbstractContainerMenu {
     private final GeneratorBlockEntity blockEntity;
     private final int upgradeSlots;
     private final ContainerLevelAccess access;
-    private final ContainerData data;
+    private final Level level;
+
+    // Client-side cached values (like your other mod)
+    private int lastWaterAmount = 0;
+    private int lastWaterCapacity = 0;
+    private int lastLavaAmount = 0;
+    private int lastLavaCapacity = 0;
 
     // Slot positions based on your layout
     private static final int OUTPUT_START_X = 71;
@@ -46,37 +53,11 @@ public class GeneratorMenu extends AbstractContainerMenu {
         this.blockEntity = blockEntity;
         this.upgradeSlots = blockEntity.getUpgradeSlots();
         this.access = ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos());
-
-        // Create a DIRECT reference ContainerData that gets live values
-        this.data = new ContainerData() {
-            @Override
-            public int get(int index) {
-                return switch (index) {
-                    case 0 -> blockEntity.getWaterAmount();
-                    case 1 -> blockEntity.getWaterCapacity();
-                    case 2 -> blockEntity.getLavaAmount();
-                    case 3 -> blockEntity.getLavaCapacity();
-                    default -> 0;
-                };
-            }
-
-            @Override
-            public void set(int index, int value) {
-                // Server -> Client sync only, no setting from client
-            }
-
-            @Override
-            public int getCount() {
-                return 4;
-            }
-        };
-
-        // Add the data slots for syncing
-        this.addDataSlots(data);
+        this.level = playerInventory.player.level();
 
         checkContainerSize(playerInventory, OUTPUT_SLOTS + upgradeSlots);
 
-        // Add output slots (4x2 grid to make 8 slots)
+        // Add output slots (4x3 grid to make 12 slots)
         addOutputSlots();
 
         // Add upgrade slots (dynamic based on tier)
@@ -87,6 +68,63 @@ public class GeneratorMenu extends AbstractContainerMenu {
 
         // Add player hotbar
         addPlayerHotbar(playerInventory);
+
+        // Add data slots for syncing (like your other mod)
+        addDataSlots();
+    }
+
+    private void addDataSlots() {
+        // Water amount
+        this.addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return blockEntity.getWaterAmount();
+            }
+
+            @Override
+            public void set(int value) {
+                lastWaterAmount = value;
+            }
+        });
+
+        // Water capacity
+        this.addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return blockEntity.getWaterCapacity();
+            }
+
+            @Override
+            public void set(int value) {
+                lastWaterCapacity = value;
+            }
+        });
+
+        // Lava amount
+        this.addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return blockEntity.getLavaAmount();
+            }
+
+            @Override
+            public void set(int value) {
+                lastLavaAmount = value;
+            }
+        });
+
+        // Lava capacity
+        this.addDataSlot(new DataSlot() {
+            @Override
+            public int get() {
+                return blockEntity.getLavaCapacity();
+            }
+
+            @Override
+            public void set(int value) {
+                lastLavaCapacity = value;
+            }
+        });
     }
 
     private void addOutputSlots() {
@@ -147,21 +185,21 @@ public class GeneratorMenu extends AbstractContainerMenu {
         }
     }
 
-    // Getter methods for accessing synced data - THESE NOW GET LIVE DATA
+    // Getter methods that work on both client and server (like your other mod)
     public int getWaterAmount() {
-        return this.data.get(0);
+        return level.isClientSide ? lastWaterAmount : blockEntity.getWaterAmount();
     }
 
     public int getWaterCapacity() {
-        return this.data.get(1);
+        return level.isClientSide ? lastWaterCapacity : blockEntity.getWaterCapacity();
     }
 
     public int getLavaAmount() {
-        return this.data.get(2);
+        return level.isClientSide ? lastLavaAmount : blockEntity.getLavaAmount();
     }
 
     public int getLavaCapacity() {
-        return this.data.get(3);
+        return level.isClientSide ? lastLavaCapacity : blockEntity.getLavaCapacity();
     }
 
     public float getWaterLevel() {
