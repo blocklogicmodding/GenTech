@@ -1,3 +1,16 @@
 {
+  "block.gentech.copper_generator": "Copper Generator",
+  "block.gentech.iron_generator": "Iron Generator",
+  "block.gentech.diamond_generator": "Diamond Generator",
+  "block.gentech.netherite_generator": "Netherite Generator",
 
+  "item.gentech.basic_speed_upgrade": "Basic Speed Upgrade",
+  "item.gentech.advanced_speed_upgrade": "Advanced Speed Upgrade",
+  "item.gentech.ultimate_speed_upgrade": "Ultimate Speed Upgrade",
+  "item.gentech.basic_efficiency_upgrade": "Basic Efficiency Upgrade",
+  "item.gentech.advanced_efficiency_upgrade": "Advanced Efficiency Upgrade",
+  "item.gentech.ultimate_efficiency_upgrade": "Ultimate Efficiency Upgrade",
+  "item.gentech.copper_to_iron_generator_upgrade": "Copper to Iron Generator Upgrade",
+  "item.gentech.iron_to_diamond_generator_upgrade": "Iron to Diamond Generator Upgrade",
+  "item.gentech.diamond_to_netherite_generator_upgrade": "Diamond to Netherite Generator Upgrade"
 }

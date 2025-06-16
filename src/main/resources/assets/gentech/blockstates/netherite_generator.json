@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "facing=north": {
       "model": "gentech:block/netherite_generator"
+    },
+    "facing=south": {
+      "model": "gentech:block/netherite_generator",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "gentech:block/netherite_generator",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "gentech:block/netherite_generator",
+      "y": 270
     }
   }
 }

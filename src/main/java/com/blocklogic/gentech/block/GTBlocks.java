@@ -1,6 +1,10 @@
 package com.blocklogic.gentech.block;
 
 import com.blocklogic.gentech.GenTech;
+import com.blocklogic.gentech.block.custom.CopperGeneratorBlock;
+import com.blocklogic.gentech.block.custom.DiamondGeneratorBlock;
+import com.blocklogic.gentech.block.custom.IronGeneratorBlock;
+import com.blocklogic.gentech.block.custom.NetheriteGeneratorBlock;
 import com.blocklogic.gentech.item.GTItems;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -17,7 +21,7 @@ public class GTBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(GenTech.MODID);
 
     public static final DeferredBlock<Block> COPPER_GENERATOR = registerBlock("copper_generator",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new CopperGeneratorBlock(BlockBehaviour.Properties.of()
                     .strength(3.0F)
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.STONE)
@@ -25,7 +29,7 @@ public class GTBlocks {
             ));
 
     public static final DeferredBlock<Block> IRON_GENERATOR = registerBlock("iron_generator",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new IronGeneratorBlock(BlockBehaviour.Properties.of()
                     .strength(3.0F)
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.STONE)
@@ -33,7 +37,7 @@ public class GTBlocks {
             ));
 
     public static final DeferredBlock<Block> DIAMOND_GENERATOR = registerBlock("diamond_generator",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new DiamondGeneratorBlock(BlockBehaviour.Properties.of()
                     .strength(3.0F)
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.STONE)
@@ -41,7 +45,7 @@ public class GTBlocks {
             ));
 
     public static final DeferredBlock<Block> NETHERITE_GENERATOR = registerBlock("netherite_generator",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new NetheriteGeneratorBlock(BlockBehaviour.Properties.of()
                     .strength(3.0F)
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.STONE)

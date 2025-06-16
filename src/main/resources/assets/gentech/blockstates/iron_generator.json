@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "facing=north": {
       "model": "gentech:block/iron_generator"
+    },
+    "facing=south": {
+      "model": "gentech:block/iron_generator",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "gentech:block/iron_generator",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "gentech:block/iron_generator",
+      "y": 270
     }
   }
 }

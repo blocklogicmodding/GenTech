@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "facing=north": {
       "model": "gentech:block/copper_generator"
+    },
+    "facing=south": {
+      "model": "gentech:block/copper_generator",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "gentech:block/copper_generator",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "gentech:block/copper_generator",
+      "y": 270
     }
   }
 }
