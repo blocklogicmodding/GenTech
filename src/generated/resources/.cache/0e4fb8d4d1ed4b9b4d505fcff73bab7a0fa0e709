@@ -1,6 +1,3 @@
-// 1.21.1	2025-06-16T14:22:35.4833971	Tags for minecraft:block mod id gentech
-6a74a54c270eaaa446846f7a6d40bd87af50ba81 data/gentech/tags/block/dense_generatable_blocks.json
+// 1.21.1	2025-06-16T17:23:59.8410267	Tags for minecraft:block mod id gentech
 c5a5b023fc46a32cced47b40cbf600797cf2d85a data/gentech/tags/block/gentech_generators.json
-961f2f2df8dc5c906ef1d1ae988dfb8f38ff66d5 data/gentech/tags/block/hard_generatable_blocks.json
-375a1ee49c5057f3ba997cc5cad6b5ef07ad4a1e data/gentech/tags/block/soft_generatable_blocks.json
 c5a5b023fc46a32cced47b40cbf600797cf2d85a data/minecraft/tags/block/mineable/pickaxe.json

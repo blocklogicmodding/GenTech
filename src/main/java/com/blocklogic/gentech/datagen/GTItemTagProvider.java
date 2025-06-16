@@ -31,9 +31,5 @@ public class GTItemTagProvider extends ItemTagsProvider {
                 .add(GTItems.BASIC_SPEED_UPGRADE.get())
                 .add(GTItems.ADVANCED_SPEED_UPGRADE.get())
                 .add(GTItems.ULTIMATE_SPEED_UPGRADE.get());
-
-        copy(GTTags.Blocks.SOFT_GENERATABLE_BLOCKS, GTTags.Items.SOFT_GENERATABLE_BLOCK_ITEMS);
-        copy(GTTags.Blocks.MEDIUM_GENERATABLE_BLOCKS, GTTags.Items.MEDIUM_GENERATABLE_BLOCK_ITEMS);
-        copy(GTTags.Blocks.SOFT_GENERATABLE_BLOCKS, GTTags.Items.HARD_GENERATABLE_BLOCK_ITEMS);
     }
 }
