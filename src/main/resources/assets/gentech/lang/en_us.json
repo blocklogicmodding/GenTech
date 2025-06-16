@@ -86,8 +86,8 @@
   "_comment_jei": "JEI Integration - Used in JEI classes",
   "jei.gentech.category.generation": "Block Generation",
   "jei.gentech.generation.catalyst": "Place generator above this block",
-  "jei.gentech.generation.water": "Water: %s mB",
-  "jei.gentech.generation.lava": "Lava: %s mB",
+  "jei.gentech.generation.fluid1": "Fluid 1: %s mB",
+  "jei.gentech.generation.fluid2": "Fluid 2: %s mB",
   "jei.gentech.generation.time": "Time: %s seconds",
 
   "_comment_upgrade_conversion_messages": "Generator Upgrade Messages - Used in GeneratorUpgradeHandler",

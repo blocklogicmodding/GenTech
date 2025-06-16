@@ -1,9 +1,8 @@
 package com.blocklogic.gentech.compat.jei;
 
-import com.blocklogic.gentech.Config;
 import com.blocklogic.gentech.GenTech;
 import com.blocklogic.gentech.block.GTBlocks;
-import com.blocklogic.gentech.block.entity.GeneratorBlockEntity;
+import com.blocklogic.gentech.config.CustomGeneratorRecipeConfig;
 import com.mojang.logging.LogUtils;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -66,41 +65,23 @@ public class GTJeiPlugin implements IModPlugin {
     private List<GenerationRecipe> generateGenerationRecipes() {
         List<GenerationRecipe> recipes = new ArrayList<>();
 
-        recipes.addAll(generateCategoryRecipes(GeneratorBlockEntity.BlockCategory.SOFT));
-        recipes.addAll(generateCategoryRecipes(GeneratorBlockEntity.BlockCategory.MEDIUM));
-        recipes.addAll(generateCategoryRecipes(GeneratorBlockEntity.BlockCategory.HARD));
+        if (CustomGeneratorRecipeConfig.getAllRecipes().isEmpty()) {
+            CustomGeneratorRecipeConfig.loadRecipes();
+        }
 
-        LogUtils.getLogger().info("Generated {} total generation recipes for JEI", recipes.size());
-        return recipes;
-    }
-
-    private List<GenerationRecipe> generateCategoryRecipes(GeneratorBlockEntity.BlockCategory category) {
-        List<GenerationRecipe> recipes = new ArrayList<>();
-        List<String> blockList = getBlockListForCategory(category);
-
-        for (String blockId : blockList) {
+        for (CustomGeneratorRecipeConfig.CustomGeneratorRecipe customRecipe : CustomGeneratorRecipeConfig.getAllRecipes()) {
             try {
-                GenerationRecipe recipe = GenerationRecipe.create(blockId, category);
-                if (recipe != null) {
-                    recipes.add(recipe);
+                GenerationRecipe jeiRecipe = GenerationRecipe.createFromCustomRecipe(customRecipe);
+                if (jeiRecipe != null) {
+                    recipes.add(jeiRecipe);
                 }
             } catch (Exception e) {
-                LogUtils.getLogger().error("Error creating generation recipe for block {}: {}",
-                        blockId, e.getMessage(), e);
+                LogUtils.getLogger().error("Error creating JEI recipe for {}: {}", customRecipe.name, e.getMessage());
             }
         }
 
-        LogUtils.getLogger().info("Generated {} {} block generation recipes for JEI",
-                recipes.size(), category.name().toLowerCase());
+        LogUtils.getLogger().info("Generated {} JEI generation recipes", recipes.size());
         return recipes;
-    }
-
-    private List<String> getBlockListForCategory(GeneratorBlockEntity.BlockCategory category) {
-        return switch (category) {
-            case SOFT -> Config.getValidatedSoftGeneratableBlocks();
-            case MEDIUM -> Config.getValidatedMediumGeneratableBlocks();
-            case HARD -> Config.getValidatedHardGeneratableBlocks();
-        };
     }
 
     private static IJeiRuntime jeiRuntime;

@@ -7,7 +7,9 @@ import com.blocklogic.gentech.block.custom.IronGeneratorBlock;
 import com.blocklogic.gentech.block.custom.NetheriteGeneratorBlock;
 import com.blocklogic.gentech.block.entity.GTBlockEntities;
 import com.blocklogic.gentech.block.entity.GeneratorBlockEntity;
+import com.blocklogic.gentech.command.GTCommands;
 import com.blocklogic.gentech.component.GTDataComponents;
+import com.blocklogic.gentech.config.CustomGeneratorRecipeConfig;
 import com.blocklogic.gentech.item.GTCreativeTab;
 import com.blocklogic.gentech.item.GTItems;
 import com.blocklogic.gentech.screen.GTMenuTypes;
@@ -58,8 +60,8 @@ public class GenTech {
 
         modEventBus.addListener(this::commonSetup);
 
-
         NeoForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(GTCommands.class);
 
         GTBlocks.register(modEventBus);
         GTItems.register(modEventBus);
@@ -77,7 +79,9 @@ public class GenTech {
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
-
+        event.enqueueWork(() -> {
+            CustomGeneratorRecipeConfig.loadRecipes();
+        });
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {

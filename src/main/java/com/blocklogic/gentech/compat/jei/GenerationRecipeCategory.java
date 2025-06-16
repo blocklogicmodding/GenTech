@@ -71,19 +71,19 @@ public class GenerationRecipeCategory implements IRecipeCategory<GenerationRecip
                 });
 
         builder.addSlot(RecipeIngredientRole.INPUT, 6, 16)
-                .addFluidStack(recipe.getWaterStack().getFluid(), recipe.getWaterStack().getAmount())
+                .addFluidStack(recipe.getFluid1Stack().getFluid(), recipe.getFluid1Stack().getAmount())
                 .setFluidRenderer(100, false, 16, 16)
                 .addTooltipCallback((view, tooltip) -> {
-                    tooltip.add(Component.translatable("jei.gentech.generation.water",
-                            String.format("%,d", recipe.getWaterStack().getAmount())));
+                    tooltip.add(Component.translatable("jei.gentech.generation.fluid1",
+                            String.format("%,d", recipe.getFluid1Stack().getAmount())));
                 });
 
         builder.addSlot(RecipeIngredientRole.INPUT, 50, 16)
-                .addFluidStack(recipe.getLavaStack().getFluid(), recipe.getLavaStack().getAmount())
+                .addFluidStack(recipe.getFluid2Stack().getFluid(), recipe.getFluid2Stack().getAmount())
                 .setFluidRenderer(100, false, 16, 16)
                 .addTooltipCallback((view, tooltip) -> {
-                    tooltip.add(Component.translatable("jei.gentech.generation.lava",
-                            String.format("%,d", recipe.getLavaStack().getAmount())));
+                    tooltip.add(Component.translatable("jei.gentech.generation.fluid2",
+                            String.format("%,d", recipe.getFluid2Stack().getAmount())));
                 });
 
         builder.addSlot(RecipeIngredientRole.OUTPUT, 84, 16)
@@ -92,7 +92,6 @@ public class GenerationRecipeCategory implements IRecipeCategory<GenerationRecip
 
     @Override
     public void draw(GenerationRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
-
         Font font = Minecraft.getInstance().font;
         String timeText = Component.translatable("jei.gentech.generation.time",
                 String.format("%.1f", recipe.getGenerationTime() / 20.0f)).getString();

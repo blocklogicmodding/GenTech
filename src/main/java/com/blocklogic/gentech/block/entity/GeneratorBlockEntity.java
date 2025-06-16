@@ -6,6 +6,7 @@ import com.blocklogic.gentech.block.custom.DiamondGeneratorBlock;
 import com.blocklogic.gentech.block.custom.IronGeneratorBlock;
 import com.blocklogic.gentech.block.custom.NetheriteGeneratorBlock;
 import com.blocklogic.gentech.component.GTDataComponents;
+import com.blocklogic.gentech.config.CustomGeneratorRecipeConfig;
 import com.blocklogic.gentech.item.GTItems;
 import com.blocklogic.gentech.screen.custom.GeneratorMenu;
 import net.minecraft.core.BlockPos;
@@ -29,6 +30,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
@@ -78,7 +80,7 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         this.waterTank = new FluidTank(fluidCapacity) {
             @Override
             public boolean isFluidValid(FluidStack stack) {
-                return stack.getFluid() == Fluids.WATER;
+                return isFluidUsedInRecipes(stack.getFluid());
             }
 
             @Override
@@ -93,7 +95,7 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         this.lavaTank = new FluidTank(fluidCapacity) {
             @Override
             public boolean isFluidValid(FluidStack stack) {
-                return stack.getFluid() == Fluids.LAVA;
+                return isFluidUsedInRecipes(stack.getFluid());
             }
 
             @Override
@@ -177,6 +179,15 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         }
     }
 
+    private boolean isFluidUsedInRecipes(Fluid fluid) {
+        for (CustomGeneratorRecipeConfig.CustomGeneratorRecipe recipe : CustomGeneratorRecipeConfig.getAllRecipes()) {
+            if (recipe.fluid1 == fluid || recipe.fluid2 == fluid) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static void tick(Level level, BlockPos pos, BlockState state, GeneratorBlockEntity blockEntity) {
         if (level.isClientSide()) {
             return;
@@ -234,26 +245,35 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         BlockState belowState = level.getBlockState(belowPos);
         Block belowBlock = belowState.getBlock();
 
-        ResourceLocation blockLocation = BuiltInRegistries.BLOCK.getKey(belowBlock);
-        String blockName = blockLocation.toString();
+        List<CustomGeneratorRecipeConfig.CustomGeneratorRecipe> recipes =
+                CustomGeneratorRecipeConfig.getRecipesForBlock(belowBlock);
 
-        List<String> softBlocks = Config.getValidatedSoftGeneratableBlocks();
-        List<String> mediumBlocks = Config.getValidatedMediumGeneratableBlocks();
-        List<String> hardBlocks = Config.getValidatedHardGeneratableBlocks();
-
-        if (softBlocks.contains(blockName)) {
-            this.targetBlock = belowBlock;
-            this.targetCategory = BlockCategory.SOFT;
-        } else if (mediumBlocks.contains(blockName)) {
-            this.targetBlock = belowBlock;
-            this.targetCategory = BlockCategory.MEDIUM;
-        } else if (hardBlocks.contains(blockName)) {
-            this.targetBlock = belowBlock;
-            this.targetCategory = BlockCategory.HARD;
-        } else {
-            this.targetBlock = null;
-            this.targetCategory = null;
+        if (!recipes.isEmpty()) {
+            for (CustomGeneratorRecipeConfig.CustomGeneratorRecipe recipe : recipes) {
+                if (hasMatchingFluids(recipe)) {
+                    this.targetBlock = belowBlock;
+                    this.targetCategory = recipe.category;
+                    return;
+                }
+            }
         }
+
+        this.targetBlock = null;
+        this.targetCategory = null;
+    }
+
+    private boolean hasMatchingFluids(CustomGeneratorRecipeConfig.CustomGeneratorRecipe recipe) {
+        FluidStack waterFluid = waterTank.getFluid();
+        FluidStack lavaFluid = lavaTank.getFluid();
+
+        if (waterFluid.isEmpty() || lavaFluid.isEmpty()) {
+            return false;
+        }
+
+        boolean fluid1Match = (waterFluid.getFluid() == recipe.fluid1 && lavaFluid.getFluid() == recipe.fluid2);
+        boolean fluid2Match = (waterFluid.getFluid() == recipe.fluid2 && lavaFluid.getFluid() == recipe.fluid1);
+
+        return fluid1Match || fluid2Match;
     }
 
     private boolean canGenerate() {
@@ -265,9 +285,35 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
             return false;
         }
 
-        int requiredFluidAmount = getRequiredFluidConsumption();
-        return waterTank.getFluidAmount() >= requiredFluidAmount &&
-                lavaTank.getFluidAmount() >= requiredFluidAmount;
+        List<CustomGeneratorRecipeConfig.CustomGeneratorRecipe> recipes =
+                CustomGeneratorRecipeConfig.getRecipesForBlock(targetBlock);
+
+        if (recipes.isEmpty()) {
+            return false;
+        }
+
+        for (CustomGeneratorRecipeConfig.CustomGeneratorRecipe recipe : recipes) {
+            if (hasMatchingFluidsForRecipe(recipe)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean hasMatchingFluidsForRecipe(CustomGeneratorRecipeConfig.CustomGeneratorRecipe recipe) {
+        int requiredAmount = getRequiredFluidConsumption();
+
+        FluidStack tank1 = waterTank.getFluid();
+        FluidStack tank2 = lavaTank.getFluid();
+
+        boolean option1 = (tank1.getFluid() == recipe.fluid1 && tank1.getAmount() >= requiredAmount &&
+                tank2.getFluid() == recipe.fluid2 && tank2.getAmount() >= requiredAmount);
+
+        boolean option2 = (tank1.getFluid() == recipe.fluid2 && tank1.getAmount() >= requiredAmount &&
+                tank2.getFluid() == recipe.fluid1 && tank2.getAmount() >= requiredAmount);
+
+        return option1 || option2;
     }
 
     private boolean hasOutputSpace() {
@@ -513,12 +559,11 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
 
     private IFluidHandler createSideFluidHandler(Direction side) {
         Direction facing = getBlockState().getValue(CopperGeneratorBlock.FACING);
-
         Direction absoluteSide = getAbsoluteSide(facing, side);
 
         return switch (absoluteSide) {
-            case EAST -> waterTank;
-            case WEST -> lavaTank;
+            case WEST -> waterTank;
+            case EAST -> lavaTank;
             case NORTH, SOUTH -> new NoInputFluidHandler();
             default -> new NoAccessFluidHandler();
         };
@@ -732,19 +777,29 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public int fill(FluidStack resource, FluidAction action) {
-            if (resource.getFluid() == Fluids.WATER) {
+            if (!waterTank.getFluid().isEmpty() && waterTank.getFluid().getFluid() == resource.getFluid()) {
                 return waterTank.fill(resource, action);
-            } else if (resource.getFluid() == Fluids.LAVA) {
+            }
+            if (!lavaTank.getFluid().isEmpty() && lavaTank.getFluid().getFluid() == resource.getFluid()) {
                 return lavaTank.fill(resource, action);
             }
+
+            if (waterTank.getFluid().isEmpty()) {
+                return waterTank.fill(resource, action);
+            }
+            if (lavaTank.getFluid().isEmpty()) {
+                return lavaTank.fill(resource, action);
+            }
+
             return 0;
         }
 
         @Override
         public FluidStack drain(FluidStack resource, FluidAction action) {
-            if (resource.getFluid() == Fluids.WATER) {
+            if (!waterTank.getFluid().isEmpty() && waterTank.getFluid().getFluid() == resource.getFluid()) {
                 return waterTank.drain(resource, action);
-            } else if (resource.getFluid() == Fluids.LAVA) {
+            }
+            if (!lavaTank.getFluid().isEmpty() && lavaTank.getFluid().getFluid() == resource.getFluid()) {
                 return lavaTank.drain(resource, action);
             }
             return FluidStack.EMPTY;
@@ -912,7 +967,7 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider pRegistries) {
-        return saveWithoutMetadata(pRegistries);
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveWithoutMetadata(registries);
     }
 }

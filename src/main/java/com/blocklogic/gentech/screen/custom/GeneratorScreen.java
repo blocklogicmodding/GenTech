@@ -5,9 +5,13 @@ import com.blocklogic.gentech.block.entity.GeneratorBlockEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -78,8 +82,15 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
 
         renderUpgradeSlotBackgrounds(guiGraphics, x, y);
 
-        renderWaterBuffer(guiGraphics, x, y);
-        renderLavaBuffer(guiGraphics, x, y);
+        GeneratorBlockEntity blockEntity = this.menu.getBlockEntity();
+        FluidStack waterFluid = blockEntity.getWaterTank().getFluid();
+        FluidStack lavaFluid = blockEntity.getLavaTank().getFluid();
+
+        renderFluidBuffer(guiGraphics, x, y, waterFluid, this.menu.getWaterLevel(),
+                WATER_BUFFER_X, WATER_BUFFER_Y, WATER_BUFFER_WIDTH, WATER_BUFFER_HEIGHT);
+
+        renderFluidBuffer(guiGraphics, x, y, lavaFluid, this.menu.getLavaLevel(),
+                LAVA_BUFFER_X, LAVA_BUFFER_Y, LAVA_BUFFER_WIDTH, LAVA_BUFFER_HEIGHT);
 
         renderProgressBar(guiGraphics, x, y);
     }
@@ -100,40 +111,35 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
         }
     }
 
-    private void renderWaterBuffer(GuiGraphics guiGraphics, int guiX, int guiY) {
-        float waterLevel = this.menu.getWaterLevel();
-
-        if (waterLevel > 0) {
-            int fillHeight = (int) (WATER_BUFFER_HEIGHT * waterLevel);
-            int targetX = guiX + WATER_BUFFER_X;
-            int targetY = guiY + WATER_BUFFER_Y + (WATER_BUFFER_HEIGHT - fillHeight);
-
-            int sourceY = WATER_FILL_SOURCE_Y + (WATER_BUFFER_HEIGHT - fillHeight);
-
-            guiGraphics.blit(TEXTURE,
-                    targetX, targetY,
-                    WATER_FILL_SOURCE_X, sourceY,
-                    WATER_BUFFER_WIDTH, fillHeight
-            );
+    private void renderFluidBuffer(GuiGraphics guiGraphics, int guiX, int guiY, FluidStack fluidStack, float fillLevel, int bufferX, int bufferY, int bufferWidth, int bufferHeight) {
+        if (fillLevel <= 0 || fluidStack.isEmpty()) {
+            return;
         }
-    }
 
-    private void renderLavaBuffer(GuiGraphics guiGraphics, int guiX, int guiY) {
-        float lavaLevel = this.menu.getLavaLevel();
+        IClientFluidTypeExtensions fluidExtensions = IClientFluidTypeExtensions.of(fluidStack.getFluid());
+        ResourceLocation fluidTexture = fluidExtensions.getStillTexture(fluidStack);
 
-        if (lavaLevel > 0) {
-            int fillHeight = (int) (LAVA_BUFFER_HEIGHT * lavaLevel);
-            int targetX = guiX + LAVA_BUFFER_X;
-            int targetY = guiY + LAVA_BUFFER_Y + (LAVA_BUFFER_HEIGHT - fillHeight);
-
-            int sourceY = LAVA_FILL_SOURCE_Y + (LAVA_BUFFER_HEIGHT - fillHeight);
-
-            guiGraphics.blit(TEXTURE,
-                    targetX, targetY,
-                    LAVA_FILL_SOURCE_X, sourceY,
-                    LAVA_BUFFER_WIDTH, fillHeight
-            );
+        if (fluidTexture == null) {
+            return;
         }
+
+        TextureAtlasSprite sprite = minecraft.getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(fluidTexture);
+
+        int fillHeight = (int) (bufferHeight * fillLevel);
+        int targetX = guiX + bufferX;
+        int targetY = guiY + bufferY + (bufferHeight - fillHeight);
+
+        int fluidColor = fluidExtensions.getTintColor(fluidStack);
+        float red = ((fluidColor >> 16) & 0xFF) / 255.0f;
+        float green = ((fluidColor >> 8) & 0xFF) / 255.0f;
+        float blue = (fluidColor & 0xFF) / 255.0f;
+        float alpha = ((fluidColor >> 24) & 0xFF) / 255.0f;
+
+        if (alpha == 0) alpha = 1.0f;
+
+        guiGraphics.setColor(red, green, blue, alpha);
+        guiGraphics.blit(targetX, targetY, 0, bufferWidth, fillHeight, sprite);
+        guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f); // Reset color
     }
 
     private void renderProgressBar(GuiGraphics guiGraphics, int guiX, int guiY) {
@@ -167,11 +173,16 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
                 y >= guiY + WATER_BUFFER_Y && y <= guiY + WATER_BUFFER_Y + WATER_BUFFER_HEIGHT) {
 
             List<Component> tooltip = new ArrayList<>();
+            FluidStack waterFluid = blockEntity.getWaterTank().getFluid();
             int waterAmount = this.menu.getWaterAmount();
             int waterCapacity = this.menu.getWaterCapacity();
 
-            tooltip.add(Component.translatable("tooltip.gentech.water_tank")
-                    .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD));
+            if (!waterFluid.isEmpty()) {
+                tooltip.add(waterFluid.getDisplayName().copy().withStyle(ChatFormatting.BOLD));
+            } else {
+                tooltip.add(Component.translatable("tooltip.gentech.water_tank")
+                        .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD));
+            }
 
             NumberFormat formatter = NumberFormat.getInstance(Locale.US);
             tooltip.add(Component.translatable("tooltip.gentech.fluid_amount",
@@ -194,11 +205,16 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
                 y >= guiY + LAVA_BUFFER_Y && y <= guiY + LAVA_BUFFER_Y + LAVA_BUFFER_HEIGHT) {
 
             List<Component> tooltip = new ArrayList<>();
+            FluidStack lavaFluid = blockEntity.getLavaTank().getFluid();
             int lavaAmount = this.menu.getLavaAmount();
             int lavaCapacity = this.menu.getLavaCapacity();
 
-            tooltip.add(Component.translatable("tooltip.gentech.lava_tank")
-                    .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+            if (!lavaFluid.isEmpty()) {
+                tooltip.add(lavaFluid.getDisplayName().copy().withStyle(ChatFormatting.BOLD));
+            } else {
+                tooltip.add(Component.translatable("tooltip.gentech.lava_tank")
+                        .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+            }
 
             NumberFormat formatter = NumberFormat.getInstance(Locale.US);
             tooltip.add(Component.translatable("tooltip.gentech.fluid_amount",

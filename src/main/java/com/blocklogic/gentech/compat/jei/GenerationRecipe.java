@@ -2,31 +2,35 @@ package com.blocklogic.gentech.compat.jei;
 
 import com.blocklogic.gentech.Config;
 import com.blocklogic.gentech.block.entity.GeneratorBlockEntity;
+import com.blocklogic.gentech.config.CustomGeneratorRecipeConfig;
 import com.mojang.logging.LogUtils;
 import mezz.jei.api.recipe.category.extensions.IRecipeCategoryExtension;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 public class GenerationRecipe implements IRecipeCategoryExtension {
     private final Block targetBlock;
     private final GeneratorBlockEntity.BlockCategory category;
-    private final int waterAmount;
-    private final int lavaAmount;
+    private final Fluid fluid1;
+    private final Fluid fluid2;
+    private final int fluid1Amount;
+    private final int fluid2Amount;
     private final int generationTime;
-    private final String blockId;
+    private final String recipeName;
 
     public GenerationRecipe(Block targetBlock, GeneratorBlockEntity.BlockCategory category,
-                            int waterAmount, int lavaAmount, int generationTime, String blockId) {
+                            Fluid fluid1, Fluid fluid2, int fluid1Amount, int fluid2Amount,
+                            int generationTime, String recipeName) {
         this.targetBlock = targetBlock;
         this.category = category;
-        this.waterAmount = waterAmount;
-        this.lavaAmount = lavaAmount;
+        this.fluid1 = fluid1;
+        this.fluid2 = fluid2;
+        this.fluid1Amount = fluid1Amount;
+        this.fluid2Amount = fluid2Amount;
         this.generationTime = generationTime;
-        this.blockId = blockId;
+        this.recipeName = recipeName;
     }
 
     public Block getTargetBlock() {
@@ -37,12 +41,12 @@ public class GenerationRecipe implements IRecipeCategoryExtension {
         return category;
     }
 
-    public FluidStack getWaterStack() {
-        return new FluidStack(Fluids.WATER, waterAmount);
+    public FluidStack getFluid1Stack() {
+        return new FluidStack(fluid1, fluid1Amount);
     }
 
-    public FluidStack getLavaStack() {
-        return new FluidStack(Fluids.LAVA, lavaAmount);
+    public FluidStack getFluid2Stack() {
+        return new FluidStack(fluid2, fluid2Amount);
     }
 
     public int getGenerationTime() {
@@ -53,39 +57,41 @@ public class GenerationRecipe implements IRecipeCategoryExtension {
         return new ItemStack(targetBlock.asItem());
     }
 
-    public String getBlockId() {
-        return blockId;
+    public String getRecipeName() {
+        return recipeName;
     }
 
-    public static GenerationRecipe create(String blockId, GeneratorBlockEntity.BlockCategory category) {
+    public FluidStack getWaterStack() {
+        return getFluid1Stack();
+    }
+
+    public FluidStack getLavaStack() {
+        return getFluid2Stack();
+    }
+
+    public static GenerationRecipe createFromCustomRecipe(CustomGeneratorRecipeConfig.CustomGeneratorRecipe customRecipe) {
         try {
-            ResourceLocation blockLocation = ResourceLocation.parse(blockId);
-            Block block = BuiltInRegistries.BLOCK.get(blockLocation);
+            int fluid1Amount = getFluidConsumption(customRecipe.category);
+            int fluid2Amount = getFluidConsumption(customRecipe.category);
+            int generationTime = getGenerationTime(customRecipe.category);
 
-            if (block == null) {
-                LogUtils.getLogger().error("Failed to create generation recipe: Block not found for ID: {}", blockId);
-                throw new IllegalArgumentException("Block not found for ID: " + blockId);
-            }
-            int waterAmount = getWaterConsumption(category);
-            int lavaAmount = getLavaConsumption(category);
-            int generationTime = getGenerationTime(category);
-
-            return new GenerationRecipe(block, category, waterAmount, lavaAmount, generationTime, blockId);
+            return new GenerationRecipe(
+                    customRecipe.catalyst,
+                    customRecipe.category,
+                    customRecipe.fluid1,
+                    customRecipe.fluid2,
+                    fluid1Amount,
+                    fluid2Amount,
+                    generationTime,
+                    customRecipe.name
+            );
         } catch (Exception e) {
-            LogUtils.getLogger().error("Error creating generation recipe for block {}: {}", blockId, e.getMessage());
+            LogUtils.getLogger().error("Error creating JEI recipe for {}: {}", customRecipe.name, e.getMessage());
             return null;
         }
     }
 
-    private static int getWaterConsumption(GeneratorBlockEntity.BlockCategory category) {
-        return switch (category) {
-            case SOFT -> Config.getCopperGeneratorSoftConsumption();
-            case MEDIUM -> Config.getCopperGeneratorMediumConsumption();
-            case HARD -> Config.getCopperGeneratorHardConsumption();
-        };
-    }
-
-    private static int getLavaConsumption(GeneratorBlockEntity.BlockCategory category) {
+    private static int getFluidConsumption(GeneratorBlockEntity.BlockCategory category) {
         return switch (category) {
             case SOFT -> Config.getCopperGeneratorSoftConsumption();
             case MEDIUM -> Config.getCopperGeneratorMediumConsumption();
