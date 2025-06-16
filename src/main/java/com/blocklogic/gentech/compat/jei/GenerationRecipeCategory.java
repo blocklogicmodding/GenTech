@@ -29,7 +29,7 @@ public class GenerationRecipeCategory implements IRecipeCategory<GenerationRecip
     public GenerationRecipeCategory(IGuiHelper guiHelper) {
         this.background = guiHelper.createDrawable(TEXTURE, 0, 0, 107, 48);
         this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
-                new ItemStack(GTBlocks.DIAMOND_GENERATOR.get()));
+                new ItemStack(GTBlocks.COPPER_GENERATOR.get()));
     }
 
     @Override
