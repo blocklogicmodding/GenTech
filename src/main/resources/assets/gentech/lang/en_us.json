@@ -90,14 +90,13 @@
   "tooltip.gentech.hold_ctrl": "Hold §e[Ctrl]§7 for automation info",
   "tooltip.gentech.config_note": "§8Values configurable in mod settings",
 
-  "_comment_jei": "JEI Integration",
+  "_comment_jei_new": "JEI Integration - Add these to existing en_us.json",
   "jei.gentech.category.generation": "Block Generation",
   "jei.gentech.generation.title": "Generator Recipe",
-  "jei.gentech.generation.input": "Required:",
-  "jei.gentech.generation.output": "Generates:",
-  "jei.gentech.generation.time": "Time: %s seconds",
+  "jei.gentech.generation.catalyst": "Place generator above this block",
   "jei.gentech.generation.water": "Water: %s mB",
   "jei.gentech.generation.lava": "Lava: %s mB",
+  "jei.gentech.generation.time": "Time: %s seconds",
 
   "_comment_status_messages": "Status Messages",
   "message.gentech.generator.no_space": "Generator output is full!",
@@ -170,15 +169,6 @@
   "gentech.waila.water": "Water: %s mB",
   "gentech.waila.lava": "Lava: %s mB",
   "gentech.waila.upgrades": "Upgrades: %s/%s",
-
-  "_comment_emi": "EMI Integration",
-  "emi.gentech.category.generation": "Block Generation",
-  "emi.gentech.generation.catalyst": "Place generator above this block",
-  "emi.gentech.generation.fluids": "Consumes per operation:",
-
-  "_comment_rei": "REI Integration",
-  "rei.gentech.category.generation": "Block Generation",
-  "rei.gentech.generation.info": "Generator must be placed above the block",
 
   "_comment_fluid_persistence": "Fluid Persistence Tooltips",
   "tooltip.gentech.stored_fluids": "Stored Fluids:",
