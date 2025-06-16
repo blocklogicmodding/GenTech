@@ -1,11 +1,17 @@
 package com.blocklogic.gentech;
 
 import com.blocklogic.gentech.block.GTBlocks;
+import com.blocklogic.gentech.block.custom.CopperGeneratorBlock;
+import com.blocklogic.gentech.block.custom.DiamondGeneratorBlock;
+import com.blocklogic.gentech.block.custom.IronGeneratorBlock;
+import com.blocklogic.gentech.block.custom.NetheriteGeneratorBlock;
 import com.blocklogic.gentech.block.entity.GTBlockEntities;
+import com.blocklogic.gentech.block.entity.GeneratorBlockEntity;
 import com.blocklogic.gentech.item.GTCreativeTab;
 import com.blocklogic.gentech.item.GTItems;
 import com.blocklogic.gentech.screen.GTMenuTypes;
 import com.blocklogic.gentech.screen.custom.GeneratorScreen;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.slf4j.Logger;
 
@@ -62,11 +68,18 @@ public class GenTech {
 
         modEventBus.addListener(this::addCreative);
 
+        modEventBus.addListener(GeneratorBlockEntity::registerCapabilities);
+
         Config.register(modContainer);
+        modEventBus.register(Config.class);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
 
+    }
+
+    private void registerCapabilities(RegisterCapabilitiesEvent event) {
+        GeneratorBlockEntity.registerCapabilities(event);
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {

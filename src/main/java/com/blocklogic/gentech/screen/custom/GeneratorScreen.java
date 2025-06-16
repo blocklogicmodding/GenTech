@@ -2,11 +2,18 @@ package com.blocklogic.gentech.screen.custom;
 
 import com.blocklogic.gentech.GenTech;
 import com.blocklogic.gentech.block.entity.GeneratorBlockEntity;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ContainerData;
+
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
 
@@ -81,7 +88,7 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
         // Render upgrade slot backgrounds based on tier
         renderUpgradeSlotBackgrounds(guiGraphics, x, y);
 
-        // Render fluid buffers (fill from bottom)
+        // Render fluid buffers (fill from bottom) - now using real values
         renderWaterBuffer(guiGraphics, x, y);
         renderLavaBuffer(guiGraphics, x, y);
 
@@ -107,8 +114,8 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
     }
 
     private void renderWaterBuffer(GuiGraphics guiGraphics, int guiX, int guiY) {
-        // TODO: Get actual water level from block entity
-        float waterLevel = 0.5f; // Placeholder - 50% full
+        // Get water level from synced menu data
+        float waterLevel = this.menu.getWaterLevel();
 
         if (waterLevel > 0) {
             int fillHeight = (int) (WATER_BUFFER_HEIGHT * waterLevel);
@@ -127,8 +134,8 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
     }
 
     private void renderLavaBuffer(GuiGraphics guiGraphics, int guiX, int guiY) {
-        // TODO: Get actual lava level from block entity
-        float lavaLevel = 0.75f; // Placeholder - 75% full
+        // Get lava level from synced menu data
+        float lavaLevel = this.menu.getLavaLevel();
 
         if (lavaLevel > 0) {
             int fillHeight = (int) (LAVA_BUFFER_HEIGHT * lavaLevel);
@@ -163,6 +170,69 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
                     PROGRESS_FILL_SOURCE_X, sourceY,  // Source position (bottom portion)
                     PROGRESS_BAR_WIDTH, fillHeight  // Size
             );
+        }
+    }
+
+    @Override
+    protected void renderTooltip(GuiGraphics guiGraphics, int x, int y) {
+        super.renderTooltip(guiGraphics, x, y);
+
+        int guiX = (width - imageWidth) / 2;
+        int guiY = (height - imageHeight) / 2;
+
+        GeneratorBlockEntity blockEntity = this.menu.getBlockEntity();
+
+        // Water tank tooltip
+        if (x >= guiX + WATER_BUFFER_X && x <= guiX + WATER_BUFFER_X + WATER_BUFFER_WIDTH &&
+                y >= guiY + WATER_BUFFER_Y && y <= guiY + WATER_BUFFER_Y + WATER_BUFFER_HEIGHT) {
+
+            List<Component> tooltip = new ArrayList<>();
+            int waterAmount = this.menu.getWaterAmount();
+            int waterCapacity = this.menu.getWaterCapacity();
+
+            tooltip.add(Component.translatable("tooltip.gentech.water_tank"));
+
+            NumberFormat formatter = NumberFormat.getInstance(Locale.US);
+            tooltip.add(Component.literal(String.format("%s / %s mB",
+                            formatter.format(waterAmount),
+                            formatter.format(waterCapacity)))
+                    .withStyle(ChatFormatting.BLUE));
+
+            guiGraphics.renderComponentTooltip(this.font, tooltip, x, y);
+        }
+
+        // Lava tank tooltip
+        if (x >= guiX + LAVA_BUFFER_X && x <= guiX + LAVA_BUFFER_X + LAVA_BUFFER_WIDTH &&
+                y >= guiY + LAVA_BUFFER_Y && y <= guiY + LAVA_BUFFER_Y + LAVA_BUFFER_HEIGHT) {
+
+            List<Component> tooltip = new ArrayList<>();
+            int lavaAmount = this.menu.getLavaAmount();
+            int lavaCapacity = this.menu.getLavaCapacity();
+
+            tooltip.add(Component.translatable("tooltip.gentech.lava_tank"));
+
+            NumberFormat formatter = NumberFormat.getInstance(Locale.US);
+            tooltip.add(Component.literal(String.format("%s / %s mB",
+                            formatter.format(lavaAmount),
+                            formatter.format(lavaCapacity)))
+                    .withStyle(ChatFormatting.RED));
+
+            guiGraphics.renderComponentTooltip(this.font, tooltip, x, y);
+        }
+
+        // Progress bar tooltip
+        if (x >= guiX + PROGRESS_BAR_X && x <= guiX + PROGRESS_BAR_X + PROGRESS_BAR_WIDTH &&
+                y >= guiY + PROGRESS_BAR_Y && y <= guiY + PROGRESS_BAR_Y + PROGRESS_BAR_HEIGHT) {
+
+            List<Component> tooltip = new ArrayList<>();
+            // TODO: Get actual progress from block entity
+            float progress = 0.3f; // Placeholder
+
+            tooltip.add(Component.translatable("tooltip.gentech.generation_progress"));
+            tooltip.add(Component.literal(String.format("%.1f%%", progress * 100))
+                    .withStyle(ChatFormatting.GREEN));
+
+            guiGraphics.renderComponentTooltip(this.font, tooltip, x, y);
         }
     }
 

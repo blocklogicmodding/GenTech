@@ -6,6 +6,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.SlotItemHandler;
@@ -13,6 +15,7 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 public class GeneratorMenu extends AbstractContainerMenu {
     private final GeneratorBlockEntity blockEntity;
     private final int upgradeSlots;
+    private final ContainerData data;
 
     // Slot positions based on your layout
     private static final int OUTPUT_START_X = 71;
@@ -27,7 +30,7 @@ public class GeneratorMenu extends AbstractContainerMenu {
     private static final int PLAYER_HOTBAR_Y = 145;
 
     // Slot indices
-    private static final int OUTPUT_SLOTS = 8; // Changed from 12 to 8 as per your entity
+    private static final int OUTPUT_SLOTS = 12;
     private static final int UPGRADE_SLOT_START = OUTPUT_SLOTS; // Start after output slots
 
     // Constructor for IContainerFactory (used by registration)
@@ -41,6 +44,28 @@ public class GeneratorMenu extends AbstractContainerMenu {
         super(GTMenuTypes.GENERATOR_MENU.get(), containerId);
         this.blockEntity = blockEntity;
         this.upgradeSlots = blockEntity.getUpgradeSlots();
+
+        // Create container data for syncing fluid levels (4 values: water amount, water capacity, lava amount, lava capacity)
+        this.data = new SimpleContainerData(4) {
+            @Override
+            public int get(int index) {
+                return switch (index) {
+                    case 0 -> blockEntity.getWaterAmount();
+                    case 1 -> blockEntity.getWaterCapacity();
+                    case 2 -> blockEntity.getLavaAmount();
+                    case 3 -> blockEntity.getLavaCapacity();
+                    default -> 0;
+                };
+            }
+
+            @Override
+            public void set(int index, int value) {
+                // Data is read-only from server, no need to implement
+            }
+        };
+
+        // Add the data slots for syncing
+        this.addDataSlots(data);
 
         checkContainerSize(playerInventory, OUTPUT_SLOTS + upgradeSlots);
 
@@ -113,6 +138,35 @@ public class GeneratorMenu extends AbstractContainerMenu {
 
             addSlot(new Slot(playerInventory, col, x, y));
         }
+    }
+
+    // Getter methods for accessing synced data
+    public int getWaterAmount() {
+        return data.get(0);
+    }
+
+    public int getWaterCapacity() {
+        return data.get(1);
+    }
+
+    public int getLavaAmount() {
+        return data.get(2);
+    }
+
+    public int getLavaCapacity() {
+        return data.get(3);
+    }
+
+    public float getWaterLevel() {
+        int capacity = getWaterCapacity();
+        if (capacity == 0) return 0.0f;
+        return (float) getWaterAmount() / (float) capacity;
+    }
+
+    public float getLavaLevel() {
+        int capacity = getLavaCapacity();
+        if (capacity == 0) return 0.0f;
+        return (float) getLavaAmount() / (float) capacity;
     }
 
     @Override
