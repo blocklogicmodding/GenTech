@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "gentech:block/copper_generator"
+    }
+  }
+}

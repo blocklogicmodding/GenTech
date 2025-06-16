@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "north": "gentech:block/netherite_gen_north_south",
+    "south": "gentech:block/netherite_gen_north_south",
+    "east": "gentech:block/netherite_gen_north_east",
+    "west": "gentech:block/netherite_gen_north_west",
+    "up": "gentech:block/netherite_gen_top_bottom",
+    "down": "gentech:block/netherite_gen_top_bottom",
+    "particle": "gentech:block/netherite_gen_north_south"
+  }
+}

@@ -1,5 +1,8 @@
 package com.blocklogic.gentech;
 
+import com.blocklogic.gentech.block.GTBlocks;
+import com.blocklogic.gentech.item.GTCreativeTab;
+import com.blocklogic.gentech.item.GTItems;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -47,9 +50,11 @@ public class GenTech {
 
         NeoForge.EVENT_BUS.register(this);
 
+        GTBlocks.register(modEventBus);
+        GTItems.register(modEventBus);
+        GTCreativeTab.register(modEventBus);
 
         modEventBus.addListener(this::addCreative);
-
 
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
