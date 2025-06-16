@@ -56,8 +56,8 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
     private static final int PROGRESS_FILL_SOURCE_X = 212;
     private static final int PROGRESS_FILL_SOURCE_Y = 0;
 
-    private static final int UPGRADE_SLOT_BACKGROUND_SOURCE_X = 228;
-    private static final int UPGRADE_SLOT_BACKGROUND_SOURCE_Y = 0;
+    private static final int UPGRADE_SLOT_BACKGROUND_SOURCE_X = 212;
+    private static final int UPGRADE_SLOT_BACKGROUND_SOURCE_Y = 105;
 
     private static final int INVENTORY_LABEL_X = 26;
 
