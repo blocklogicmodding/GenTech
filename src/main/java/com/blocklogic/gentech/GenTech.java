@@ -7,6 +7,7 @@ import com.blocklogic.gentech.block.custom.IronGeneratorBlock;
 import com.blocklogic.gentech.block.custom.NetheriteGeneratorBlock;
 import com.blocklogic.gentech.block.entity.GTBlockEntities;
 import com.blocklogic.gentech.block.entity.GeneratorBlockEntity;
+import com.blocklogic.gentech.client.renderer.GeneratorBlockEntityRenderer;
 import com.blocklogic.gentech.command.GTCommands;
 import com.blocklogic.gentech.component.GTDataComponents;
 import com.blocklogic.gentech.config.CustomGeneratorRecipeConfig;
@@ -17,6 +18,7 @@ import com.blocklogic.gentech.screen.custom.GeneratorScreen;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.slf4j.Logger;
 
@@ -105,6 +107,14 @@ public class GenTech {
                 ItemBlockRenderTypes.setRenderLayer(GTBlocks.DIAMOND_GENERATOR.get(), RenderType.cutout());
                 ItemBlockRenderTypes.setRenderLayer(GTBlocks.NETHERITE_GENERATOR.get(), RenderType.cutout());
             });
+        }
+
+        @SubscribeEvent
+        public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+            event.registerBlockEntityRenderer(
+                    GTBlockEntities.GENERATOR_BLOCK_ENTITY.get(),
+                    GeneratorBlockEntityRenderer::new
+            );
         }
 
         @SubscribeEvent
