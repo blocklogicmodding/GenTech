@@ -14,6 +14,8 @@ import com.blocklogic.gentech.item.GTCreativeTab;
 import com.blocklogic.gentech.item.GTItems;
 import com.blocklogic.gentech.screen.GTMenuTypes;
 import com.blocklogic.gentech.screen.custom.GeneratorScreen;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.slf4j.Logger;
@@ -97,7 +99,13 @@ public class GenTech {
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
-
+            event.enqueueWork(() -> {
+                // Register render types for transparent blocks
+                ItemBlockRenderTypes.setRenderLayer(GTBlocks.COPPER_GENERATOR.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(GTBlocks.IRON_GENERATOR.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(GTBlocks.DIAMOND_GENERATOR.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(GTBlocks.NETHERITE_GENERATOR.get(), RenderType.cutout());
+            });
         }
 
         @SubscribeEvent
