@@ -100,7 +100,6 @@ public class GenTech {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             event.enqueueWork(() -> {
-                // Register render types for transparent blocks
                 ItemBlockRenderTypes.setRenderLayer(GTBlocks.COPPER_GENERATOR.get(), RenderType.cutout());
                 ItemBlockRenderTypes.setRenderLayer(GTBlocks.IRON_GENERATOR.get(), RenderType.cutout());
                 ItemBlockRenderTypes.setRenderLayer(GTBlocks.DIAMOND_GENERATOR.get(), RenderType.cutout());
