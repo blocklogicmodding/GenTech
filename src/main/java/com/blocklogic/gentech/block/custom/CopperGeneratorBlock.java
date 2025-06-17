@@ -32,11 +32,14 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.NumberFormat;
@@ -111,12 +114,18 @@ public class CopperGeneratorBlock extends BaseEntityBlock {
                 if (drop.getItem() instanceof BlockItem blockItem &&
                         blockItem.getBlock() == this) {
 
-                    int waterAmount = blockEntity.getWaterAmount();
-                    int lavaAmount = blockEntity.getLavaAmount();
+                    FluidStack waterTankFluid = blockEntity.getWaterTank().getFluid();
+                    FluidStack lavaTankFluid = blockEntity.getLavaTank().getFluid();
 
-                    if (waterAmount > 0 || lavaAmount > 0) {
-                        drop.set(GTDataComponents.FLUID_DATA.get(),
-                                new GTDataComponents.FluidData(waterAmount, lavaAmount));
+                    if (!waterTankFluid.isEmpty() || !lavaTankFluid.isEmpty()) {
+                        Fluid fluid1 = waterTankFluid.isEmpty() ? Fluids.EMPTY : waterTankFluid.getFluid();
+                        int amount1 = waterTankFluid.getAmount();
+                        Fluid fluid2 = lavaTankFluid.isEmpty() ? Fluids.EMPTY : lavaTankFluid.getFluid();
+                        int amount2 = lavaTankFluid.getAmount();
+
+                        GTDataComponents.FluidData fluidData = GTDataComponents.FluidData.create(
+                                fluid1, amount1, fluid2, amount2);
+                        drop.set(GTDataComponents.FLUID_DATA.get(), fluidData);
                     }
                 }
             }
@@ -210,23 +219,31 @@ public class CopperGeneratorBlock extends BaseEntityBlock {
                 .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
 
         if (fluidData != null && !fluidData.isEmpty()) {
-
             tooltipComponents.add(Component.empty());
             tooltipComponents.add(Component.translatable("tooltip.gentech.stored_fluids")
                     .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
 
-            if (fluidData.waterAmount() > 0) {
-                tooltipComponents.add(Component.translatable("tooltip.gentech.stored_water",
-                                formatter.format(fluidData.waterAmount()))
-                        .withStyle(ChatFormatting.BLUE));
+            if (fluidData.fluid1Amount() > 0) {
+                Fluid fluid1 = fluidData.getFluid1();
+                String fluidName = fluid1 == Fluids.EMPTY ? "Unknown" :
+                        Component.translatable(fluid1.getFluidType().getDescriptionId()).getString();
+
+                tooltipComponents.add(Component.literal(fluidName + ": " +
+                                formatter.format(fluidData.fluid1Amount()) + " mB")
+                        .withStyle(fluid1 == Fluids.WATER ? ChatFormatting.BLUE :
+                                fluid1 == Fluids.LAVA ? ChatFormatting.RED : ChatFormatting.YELLOW));
             }
 
-            if (fluidData.lavaAmount() > 0) {
-                tooltipComponents.add(Component.translatable("tooltip.gentech.stored_lava",
-                                formatter.format(fluidData.lavaAmount()))
-                        .withStyle(ChatFormatting.RED));
+            if (fluidData.fluid2Amount() > 0) {
+                Fluid fluid2 = fluidData.getFluid2();
+                String fluidName = fluid2 == Fluids.EMPTY ? "Unknown" :
+                        Component.translatable(fluid2.getFluidType().getDescriptionId()).getString();
+
+                tooltipComponents.add(Component.literal(fluidName + ": " +
+                                formatter.format(fluidData.fluid2Amount()) + " mB")
+                        .withStyle(fluid2 == Fluids.WATER ? ChatFormatting.BLUE :
+                                fluid2 == Fluids.LAVA ? ChatFormatting.RED : ChatFormatting.YELLOW));
             }
         }
-
     }
 }

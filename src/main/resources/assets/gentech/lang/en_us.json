@@ -72,6 +72,13 @@
   "tooltip.gentech.stored_fluids": "Stored Fluids:",
   "tooltip.gentech.stored_water": "Water: %s mB",
   "tooltip.gentech.stored_lava": "Lava: %s mB",
+  "tooltip.gentech.stored_fluid": "%s: %s mB",
+
+  "_comment_fluid_tanks": "Fluid Tank Labels - Used in GeneratorScreen",
+  "tooltip.gentech.tank.fluid1": "Tank 1",
+  "tooltip.gentech.tank.fluid2": "Tank 2",
+  "tooltip.gentech.tank.input_west": "Input: West Side",
+  "tooltip.gentech.tank.input_east": "Input: East Side",
 
   "_comment_jei": "JEI Integration - Used in JEI classes",
   "jei.gentech.category.generation": "Block Generation",
@@ -83,5 +90,20 @@
   "_comment_upgrade_conversion_messages": "Generator Upgrade Messages - Used in GeneratorUpgradeHandler",
   "message.gentech.generator.upgraded": "§aGenerator upgraded successfully!",
   "message.gentech.generator.upgrade_failed": "§cCannot upgrade this generator with this item!",
-  "message.gentech.generator.max_tier": "§6This generator is already at maximum tier!"
+  "message.gentech.generator.max_tier": "§6This generator is already at maximum tier!",
+
+  "_comment_fluid_generics": "Generic Fluid Labels - For custom fluids",
+  "tooltip.gentech.fluid.unknown": "Unknown Fluid",
+  "tooltip.gentech.fluid.empty": "Empty",
+  "tooltip.gentech.tank.capacity": "Capacity: %s mB",
+  "tooltip.gentech.tank.fill_level": "Fill Level: %s%%",
+
+  "_comment_upgrade_preservation": "Upgrade Preservation Messages",
+  "message.gentech.upgrade.state_preserved": "§aGenerator state preserved during upgrade!",
+  "message.gentech.upgrade.fluids_maintained": "§bCustom fluids maintained during upgrade!",
+
+  "_comment_config_commands": "Configuration Command Messages",
+  "command.gentech.config.reloaded": "GenTech configuration reloaded successfully!",
+  "command.gentech.recipes.reloaded": "Custom generator recipes reloaded successfully!",
+  "command.gentech.reload.failed": "Failed to reload configuration: %s"
 }

@@ -18,6 +18,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 public class GeneratorUpgradeHandler {
@@ -99,6 +102,9 @@ public class GeneratorUpgradeHandler {
             restoreGeneratorData(newBE, upgradeData);
             newBE.setChanged();
             level.sendBlockUpdated(pos, newState, newState, 3);
+
+            newBE.forceRevalidation();
+
             return true;
         }
 
@@ -108,8 +114,18 @@ public class GeneratorUpgradeHandler {
     private static GeneratorUpgradeData saveGeneratorData(GeneratorBlockEntity blockEntity) {
         GeneratorUpgradeData data = new GeneratorUpgradeData();
 
-        data.waterAmount = blockEntity.getWaterAmount();
-        data.lavaAmount = blockEntity.getLavaAmount();
+        FluidStack waterTankFluid = blockEntity.getWaterTank().getFluid();
+        FluidStack lavaTankFluid = blockEntity.getLavaTank().getFluid();
+
+        data.fluid1 = waterTankFluid.isEmpty() ? Fluids.EMPTY : waterTankFluid.getFluid();
+        data.fluid1Amount = waterTankFluid.getAmount();
+        data.fluid2 = lavaTankFluid.isEmpty() ? Fluids.EMPTY : lavaTankFluid.getFluid();
+        data.fluid2Amount = lavaTankFluid.getAmount();
+
+        data.targetBlock = blockEntity.getTargetBlock();
+        data.targetCategory = blockEntity.getTargetCategory();
+        data.progress = blockEntity.getCurrentProgress();
+        data.maxProgress = blockEntity.getMaxProgress();
 
         ItemStackHandler itemHandler = blockEntity.getItemHandler();
         data.items = new ItemStack[itemHandler.getSlots()];
@@ -121,8 +137,9 @@ public class GeneratorUpgradeHandler {
     }
 
     private static void restoreGeneratorData(GeneratorBlockEntity blockEntity, GeneratorUpgradeData data) {
-        if (data.waterAmount > 0 || data.lavaAmount > 0) {
-            GTDataComponents.FluidData fluidData = new GTDataComponents.FluidData(data.waterAmount, data.lavaAmount);
+        if (data.fluid1Amount > 0 || data.fluid2Amount > 0) {
+            GTDataComponents.FluidData fluidData = GTDataComponents.FluidData.create(
+                    data.fluid1, data.fluid1Amount, data.fluid2, data.fluid2Amount);
             blockEntity.restoreFluidData(fluidData);
         }
 
@@ -145,6 +162,10 @@ public class GeneratorUpgradeHandler {
                 }
             }
         }
+
+        if (data.targetBlock != null && data.targetCategory != null) {
+            blockEntity.restoreGenerationState(data.targetBlock, data.targetCategory, data.progress, data.maxProgress);
+        }
     }
 
     private static void showUpgradeMessage(Player player, Component message, boolean success) {
@@ -163,8 +184,15 @@ public class GeneratorUpgradeHandler {
     }
 
     private static class GeneratorUpgradeData {
-        int waterAmount;
-        int lavaAmount;
+        Fluid fluid1;
+        int fluid1Amount;
+        Fluid fluid2;
+        int fluid2Amount;
         ItemStack[] items;
+
+        Block targetBlock;
+        GeneratorBlockEntity.BlockCategory targetCategory;
+        int progress;
+        int maxProgress;
     }
 }

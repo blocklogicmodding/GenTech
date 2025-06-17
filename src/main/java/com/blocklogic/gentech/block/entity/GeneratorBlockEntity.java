@@ -196,6 +196,33 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         return false;
     }
 
+    public void forceRevalidation() {
+        validateTargetBlock();
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    public void restoreGenerationState(Block targetBlock, BlockCategory targetCategory, int progress, int maxProgress) {
+        this.targetBlock = targetBlock;
+        this.targetCategory = targetCategory;
+        this.progress = progress;
+        this.maxProgress = maxProgress;
+
+        this.lastValidatedTick = -1;
+
+        setChanged();
+    }
+
+    public int getCurrentProgress() {
+        return this.progress;
+    }
+
+    public int getMaxProgress() {
+        return this.maxProgress;
+    }
+
     public static void tick(Level level, BlockPos pos, BlockState state, GeneratorBlockEntity blockEntity) {
         if (level.isClientSide()) {
             return;
@@ -394,14 +421,20 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public void restoreFluidData(GTDataComponents.FluidData fluidData) {
-        if (fluidData.waterAmount() > 0) {
-            FluidStack waterStack = new FluidStack(Fluids.WATER, fluidData.waterAmount());
-            waterTank.fill(waterStack, IFluidHandler.FluidAction.EXECUTE);
+        if (fluidData.fluid1Amount() > 0) {
+            Fluid fluid1 = fluidData.getFluid1();
+            if (fluid1 != Fluids.EMPTY) {
+                FluidStack fluidStack = new FluidStack(fluid1, fluidData.fluid1Amount());
+                waterTank.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
+            }
         }
 
-        if (fluidData.lavaAmount() > 0) {
-            FluidStack lavaStack = new FluidStack(Fluids.LAVA, fluidData.lavaAmount());
-            lavaTank.fill(lavaStack, IFluidHandler.FluidAction.EXECUTE);
+        if (fluidData.fluid2Amount() > 0) {
+            Fluid fluid2 = fluidData.getFluid2();
+            if (fluid2 != Fluids.EMPTY) {
+                FluidStack fluidStack = new FluidStack(fluid2, fluidData.fluid2Amount());
+                lavaTank.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
+            }
         }
 
         setChanged();
@@ -591,10 +624,6 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         };
     }
 
-    public GeneratorTier getTier() {
-        return tier;
-    }
-
     public int getUpgradeSlots() {
         return upgradeSlots;
     }
@@ -625,22 +654,6 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
 
     public int getLavaCapacity() {
         return lavaTank.getCapacity();
-    }
-
-    public float getWaterLevel() {
-        if (waterTank.getCapacity() == 0) return 0.0f;
-        return (float) waterTank.getFluidAmount() / (float) waterTank.getCapacity();
-    }
-
-    public float getLavaLevel() {
-        if (lavaTank.getCapacity() == 0) return 0.0f;
-        return (float) lavaTank.getFluidAmount() / (float) lavaTank.getCapacity();
-    }
-
-    public void addTestFluids() {
-        waterTank.fill(new FluidStack(Fluids.WATER, 5000), IFluidHandler.FluidAction.EXECUTE);
-        lavaTank.fill(new FluidStack(Fluids.LAVA, 7500), IFluidHandler.FluidAction.EXECUTE);
-        setChanged();
     }
 
     @Override
