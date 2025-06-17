@@ -137,7 +137,7 @@ public class CustomGeneratorRecipeConfig {
                 # catalyst = "modid:block_name"         # The block that will be generated. It is also the block that must be placed under the generator.
                 # fluid1 = "modid:fluid_name"           # First required fluid
                 # fluid2 = "modid:fluid_name"           # Second required fluid
-                # category = "soft"                     # Category: soft, medium, or hard
+                # category = "soft"                     # Category: soft, medium, or hard (required) - determines generation speed and fluid consumption from main config
                 #
                 # Categories determine generation speed and fluid consumption (see main config)
                 # Multiple recipes can use the same catalyst with different fluids
