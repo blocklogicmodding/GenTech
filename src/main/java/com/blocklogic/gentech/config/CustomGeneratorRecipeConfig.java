@@ -134,7 +134,7 @@ public class CustomGeneratorRecipeConfig {
                 # Recipe format:
                 # [[recipes]]
                 # name = "unique_recipe_name"           # Must be unique and alphanumeric with underscores
-                # catalyst = "modid:block_name"         # Block that must be placed under the generator
+                # catalyst = "modid:block_name"         # The block that will be generated. It is also the block that must be placed under the generator.
                 # fluid1 = "modid:fluid_name"           # First required fluid
                 # fluid2 = "modid:fluid_name"           # Second required fluid
                 # category = "soft"                     # Category: soft, medium, or hard
@@ -315,7 +315,6 @@ public class CustomGeneratorRecipeConfig {
         }
     }
 
-    // ONLY called when there's an actual error
     private static void logError(String errorType, String message, int lineNumber) {
         int errorNum = errorCounter.incrementAndGet();
         String fullMessage = String.format("[Error #%d] %s: %s%s",
@@ -324,12 +323,10 @@ public class CustomGeneratorRecipeConfig {
         LOGGER.error("[GenTech Recipe Error] {}", fullMessage);
         currentSessionErrors.add(fullMessage);
 
-        // Initialize error logging ONLY when we have our first error
         if (currentErrorFile == null) {
             initializeErrorLogging();
         }
 
-        // Write to error file if initialization succeeded
         if (currentErrorFile != null) {
             try {
                 String logEntry = String.format("[%s] %s%n",
@@ -393,7 +390,6 @@ public class CustomGeneratorRecipeConfig {
         }
     }
 
-    // Public API methods
     public static List<CustomGeneratorRecipe> getRecipesForBlock(Block block) {
         String blockKey = BuiltInRegistries.BLOCK.getKey(block).toString();
         return recipesByBlock.getOrDefault(blockKey, Collections.emptyList());
@@ -407,7 +403,6 @@ public class CustomGeneratorRecipeConfig {
         return !loadedRecipes.isEmpty();
     }
 
-    // Debug methods for commands
     public static int getErrorCount() {
         return currentSessionErrors.size();
     }

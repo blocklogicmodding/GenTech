@@ -40,7 +40,6 @@ public class GTCommands {
         CommandSourceStack source = context.getSource();
 
         try {
-            // Reload the main config
             Config.loadConfig();
 
             source.sendSuccess(() -> Component.literal("GenTech main configuration reloaded successfully!")
@@ -60,7 +59,6 @@ public class GTCommands {
         CommandSourceStack source = context.getSource();
 
         try {
-            // Reload the custom generator recipes
             CustomGeneratorRecipeConfig.loadRecipes();
 
             int recipeCount = CustomGeneratorRecipeConfig.getAllRecipes().size();
@@ -86,7 +84,6 @@ public class GTCommands {
         boolean mainConfigSuccess = false;
         boolean recipeConfigSuccess = false;
 
-        // Reload main config
         try {
             Config.loadConfig();
             mainConfigSuccess = true;
@@ -96,7 +93,6 @@ public class GTCommands {
             LOGGER.error("Failed to reload main config via command", e);
         }
 
-        // Reload recipe config
         try {
             CustomGeneratorRecipeConfig.loadRecipes();
             recipeConfigSuccess = true;
@@ -106,7 +102,6 @@ public class GTCommands {
             LOGGER.error("Failed to reload recipe config via command", e);
         }
 
-        // Send summary message
         if (mainConfigSuccess && recipeConfigSuccess) {
             int recipeCount = CustomGeneratorRecipeConfig.getAllRecipes().size();
 
