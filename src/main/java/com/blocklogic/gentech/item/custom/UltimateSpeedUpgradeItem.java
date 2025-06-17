@@ -22,9 +22,6 @@ public class UltimateSpeedUpgradeItem extends Item {
         double speedIncrease = (multiplier - 1.0) * 100;
         double timeReduction = (1.0 - (1.0 / multiplier)) * 100;
 
-        tooltipComponents.add(Component.translatable("tooltip.gentech.speed_upgrade.ultimate")
-                .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD));
-
         tooltipComponents.add(Component.translatable("tooltip.gentech.speed_increase",
                         String.format("%.0f", speedIncrease))
                 .withStyle(ChatFormatting.GOLD));
@@ -32,13 +29,5 @@ public class UltimateSpeedUpgradeItem extends Item {
         tooltipComponents.add(Component.translatable("tooltip.gentech.time_reduction",
                         String.format("%.0f", timeReduction))
                 .withStyle(ChatFormatting.AQUA));
-
-        tooltipComponents.add(Component.empty());
-
-        tooltipComponents.add(Component.translatable("tooltip.gentech.upgrade.stacking")
-                .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
-
-        tooltipComponents.add(Component.translatable("tooltip.gentech.upgrade.applies_to")
-                .withStyle(ChatFormatting.DARK_GRAY));
     }
 }

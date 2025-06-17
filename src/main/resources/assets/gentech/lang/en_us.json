@@ -37,20 +37,11 @@
   "tooltip.gentech.category.hard": "Hard Block",
 
   "_comment_speed_upgrades": "Speed Upgrade Tooltips - Used in upgrade item classes",
-  "tooltip.gentech.speed_upgrade.basic": "Basic Speed Enhancement",
-  "tooltip.gentech.speed_upgrade.advanced": "Advanced Speed Enhancement",
-  "tooltip.gentech.speed_upgrade.ultimate": "Ultimate Speed Enhancement",
   "tooltip.gentech.speed_increase": "+%s%% Generation Speed",
   "tooltip.gentech.time_reduction": "-%s%% Generation Time",
-  "tooltip.gentech.upgrade.stacking": "Multiple speed upgrades multiply together",
-  "tooltip.gentech.upgrade.applies_to": "Works with all generator tiers",
 
   "_comment_efficiency_upgrades": "Efficiency Upgrade Tooltips - Used in upgrade item classes",
-  "tooltip.gentech.efficiency_upgrade.basic": "Basic Efficiency Enhancement",
-  "tooltip.gentech.efficiency_upgrade.advanced": "Advanced Efficiency Enhancement",
-  "tooltip.gentech.efficiency_upgrade.ultimate": "Ultimate Efficiency Enhancement",
   "tooltip.gentech.fluid_reduction": "-%s%% Fluid Consumption",
-  "tooltip.gentech.efficiency.stacking": "Multiple efficiency upgrades stack additively",
 
   "_comment_tier_upgrades": "Tier Upgrade Tooltips - Used in tier upgrade item classes",
   "tooltip.gentech.tier_upgrade.copper_to_iron": "Copper → Iron Generator Upgrade",

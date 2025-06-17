@@ -257,7 +257,6 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
                         case HARD -> Component.translatable("tooltip.gentech.category.hard")
                                 .withStyle(ChatFormatting.RED);
                     };
-                    tooltip.add(Component.translatable("tooltip.gentech.generating_category", categoryComponent));
                 }
             } else {
                 tooltip.add(Component.translatable("tooltip.gentech.status.idle")

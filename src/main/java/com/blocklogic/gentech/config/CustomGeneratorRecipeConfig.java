@@ -141,7 +141,7 @@ public class CustomGeneratorRecipeConfig {
                 #
                 # Categories determine generation speed and fluid consumption (see main config)
                 # Multiple recipes can use the same catalyst with different fluids
-                # Conflicts resolved alphabetically by recipe name
+                # Conflicts resolved alphabetically by recipe name (each recipe name must be unique)
                 
                 # Example custom recipe (commented out):
                 # [[recipes]]

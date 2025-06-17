@@ -120,6 +120,14 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
                 }
                 return isValidUpgradeItem(stack);
             }
+
+            @Override
+            public int getSlotLimit(int slot) {
+                if (slot >= OUTPUT_SLOTS) {
+                    return 1; // Upgrade slots can only hold 1 item
+                }
+                return super.getSlotLimit(slot); // Output slots keep normal stack limits
+            }
         };
     }
 
@@ -170,7 +178,7 @@ public class GeneratorBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         public int getSlotLimit(int slot) {
             if (slot >= OUTPUT_SLOTS) return 0;
-            return internal.getSlotLimit(slot);
+            return 1;
         }
 
         @Override

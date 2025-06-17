@@ -17,9 +17,6 @@ public class DiamondToNetheriteUpgradeItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
 
-        tooltipComponents.add(Component.translatable("tooltip.gentech.tier_upgrade.diamond_to_netherite")
-                .withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD));
-
         tooltipComponents.add(Component.empty());
 
         tooltipComponents.add(Component.translatable("tooltip.gentech.tier_upgrade.benefits")

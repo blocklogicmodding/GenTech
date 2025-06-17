@@ -17,9 +17,6 @@ public class IronToDiamondUpgradeItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
 
-        tooltipComponents.add(Component.translatable("tooltip.gentech.tier_upgrade.iron_to_diamond")
-                .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD));
-
         tooltipComponents.add(Component.empty());
 
         tooltipComponents.add(Component.translatable("tooltip.gentech.tier_upgrade.benefits")

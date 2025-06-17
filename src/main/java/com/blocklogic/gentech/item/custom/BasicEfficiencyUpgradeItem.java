@@ -20,19 +20,8 @@ public class BasicEfficiencyUpgradeItem extends Item {
 
         double reduction = Config.getBasicEfficiencyUpgradeReduction() * 100;
 
-        tooltipComponents.add(Component.translatable("tooltip.gentech.efficiency_upgrade.basic")
-                .withStyle(ChatFormatting.GREEN));
-
         tooltipComponents.add(Component.translatable("tooltip.gentech.fluid_reduction",
                         String.format("%.0f", reduction))
                 .withStyle(ChatFormatting.BLUE));
-
-        tooltipComponents.add(Component.empty());
-
-        tooltipComponents.add(Component.translatable("tooltip.gentech.efficiency.stacking")
-                .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
-
-        tooltipComponents.add(Component.translatable("tooltip.gentech.upgrade.applies_to")
-                .withStyle(ChatFormatting.DARK_GRAY));
     }
 }
