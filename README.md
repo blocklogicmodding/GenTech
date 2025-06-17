@@ -1,25 +1,70 @@
 
-Installation information
-=======
+# GenTech
 
-This template repository can be directly cloned to get you started with a new
-mod. Simply create a new repository cloned from this one, by following the
-instructions provided by [GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
+![GenTech](https://deonjonker.com/blm/gentech/gt_banner.png)
 
-Once you have your clone, simply open the repository in the IDE of your choice. The usual recommendation for an IDE is either IntelliJ IDEA or Eclipse.
+A Minecraft mod that adds tiered block generators powered by fluid combinations. Generate blocks by placing generators above them and supplying the required fluids.
 
-If at any point you are missing libraries in your IDE, or you've run into problems you can
-run `gradlew --refresh-dependencies` to refresh the local cache. `gradlew clean` to reset everything 
-{this does not affect your code} and then start the process again.
+## Features
 
-Mapping Names:
-============
-By default, the MDK is configured to use the official mapping names from Mojang for methods and fields 
-in the Minecraft codebase. These names are covered by a specific license. All modders should be aware of this
-license. For the latest license text, refer to the mapping file itself, or the reference copy here:
-https://github.com/NeoForged/NeoForm/blob/main/Mojang.md
+**Four Generator Tiers:**
 
-Additional Resources: 
-==========
-Community Documentation: https://docs.neoforged.net/  
-NeoForged Discord: https://discord.neoforged.net/
+-   **Copper Generator** - Basic tier with no upgrade slots
+-   **Iron Generator** - 1 upgrade slot, improved speed and efficiency
+-   **Diamond Generator** - 2 upgrade slots, faster generation
+-   **Netherite Generator** - 3 upgrade slots, ultimate performance
+
+**Upgrade System:**
+
+-   **Speed Upgrades** - Reduce generation time (Basic, Advanced, Ultimate)
+-   **Efficiency Upgrades** - Lower fluid consumption (Basic, Advanced, Ultimate)
+-   **Tier Upgrades** - Convert generators to higher tiers while preserving contents
+
+**Block Generation:**
+
+-   Place any generator above a valid block to generate it
+-   Requires water and lava by default (configurable via custom recipes)
+-   Three generation categories: Soft, Medium, and Hard blocks
+-   Different speeds and fluid costs based on block category
+
+**Automation:**
+
+-   Dual fluid tanks with directional input (East/West sides)
+-   Automatic output to chests placed above generators
+-   Item extraction via logistics from North/South sides
+-   Persistent fluid storage when breaking/placing generators
+
+**Customization:**
+
+-   Extensive configuration file for speeds, costs, and fluid buffers (`config/gentech-common.toml`)
+-   Custom recipe system via TOML files (`config/gentech/custom-generator-recipes.toml`)
+-   Support for modded fluids and blocks
+-   Hot config reloading with `/gentech reload` command
+
+**Integration:**
+
+-   JEI support showing all generation recipes
+-   Compatible with fluid pipes and item automation
+-   Works with any mod that adds blocks or fluids
+
+## Configuration
+
+The mod creates configuration files in `config/gentech/`:
+
+-   `gentech-common.toml` - Main settings for speeds, costs, and block categories
+-   `custom_generator_recipes.toml` - Define custom fluid combinations and blocks
+
+Use `/gentech reload` to apply configuration changes without restarting.
+
+## License
+
+All rights reserved. This mod is protected by copyright and may not be redistributed or modified without explicit permission.
+
+**Permitted Uses:**
+
+-   Inclusion in modpacks (public or private)
+-   Content creation (videos, streams, reviews, etc.)
+
+----------
+
+[**Wiki**](https://github.com/blocklogicmodding/GenTech/wiki) | [**Issue Tracker**](https://github.com/blocklogicmodding/GenTech/issues) | [**BLM Discord**](https://discord.gg/YtdA3AMqsXe)
