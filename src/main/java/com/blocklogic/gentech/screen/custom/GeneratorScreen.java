@@ -51,12 +51,6 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
     private static final int UPGRADE_SLOT_SPACING = 18;
     private static final int UPGRADE_SLOT_SIZE = 18;
 
-    private static final int WATER_FILL_SOURCE_X = 228;
-    private static final int WATER_FILL_SOURCE_Y = 52;
-
-    private static final int LAVA_FILL_SOURCE_X = 212;
-    private static final int LAVA_FILL_SOURCE_Y = 52;
-
     private static final int PROGRESS_FILL_SOURCE_X = 212;
     private static final int PROGRESS_FILL_SOURCE_Y = 0;
 
@@ -139,7 +133,7 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
 
         guiGraphics.setColor(red, green, blue, alpha);
         guiGraphics.blit(targetX, targetY, 0, bufferWidth, fillHeight, sprite);
-        guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f); // Reset color
+        guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     private void renderProgressBar(GuiGraphics guiGraphics, int guiX, int guiY) {
