@@ -28,8 +28,7 @@ public class GTBlockTagProvider extends BlockTagsProvider {
                 .add(GTBlocks.IRON_TANK.get())
                 .add(GTBlocks.DIAMOND_TANK.get())
                 .add(GTBlocks.NETHERITE_TANK.get())
-                .add(GTBlocks.HYDRO_COLLECTOR.get())
-                .add(GTBlocks.MAGMA_COLLECTOR.get());
+                .add(GTBlocks.COLLECTOR.get());
 
         tag(GTTags.Blocks.GENTECH_GENERATORS)
                 .add(GTBlocks.COPPER_GENERATOR.get())
@@ -44,7 +43,6 @@ public class GTBlockTagProvider extends BlockTagsProvider {
                 .add(GTBlocks.NETHERITE_TANK.get());
 
         tag(GTTags.Blocks.GENTECH_COLLECTORS)
-                .add(GTBlocks.HYDRO_COLLECTOR.get())
-                .add(GTBlocks.MAGMA_COLLECTOR.get());
+                .add(GTBlocks.COLLECTOR.get());
     }
 }

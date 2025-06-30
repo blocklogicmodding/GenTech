@@ -24,8 +24,7 @@ public class GTBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(GTBlocks.IRON_TANK.get());
         dropSelf(GTBlocks.DIAMOND_TANK.get());
         dropSelf(GTBlocks.NETHERITE_TANK.get());
-        dropSelf(GTBlocks.HYDRO_COLLECTOR.get());
-        dropSelf(GTBlocks.MAGMA_COLLECTOR.get());
+        dropSelf(GTBlocks.COLLECTOR.get());
     }
 
     @Override

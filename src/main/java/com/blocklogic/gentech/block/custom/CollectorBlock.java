@@ -20,18 +20,11 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
 
-public class HydroCollectorBlock extends BaseEntityBlock {
-    public static final BooleanProperty COLLECTING = BooleanProperty.create("collecting");
-    public static final MapCodec<HydroCollectorBlock> CODEC = simpleCodec(HydroCollectorBlock::new);
+public class CollectorBlock extends BaseEntityBlock {
+    public static final MapCodec<CollectorBlock> CODEC = simpleCodec(CollectorBlock::new);
 
-    public HydroCollectorBlock(Properties properties) {
+    public CollectorBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(COLLECTING, false));
-    }
-
-    @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(COLLECTING);
     }
 
     @Override

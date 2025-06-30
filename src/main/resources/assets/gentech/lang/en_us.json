@@ -10,8 +10,7 @@
   "block.gentech.diamond_tank": "Diamond Tank",
   "block.gentech.netherite_tank": "Netherite Tank",
 
-  "block.gentech.hydro_collector": "Hydro Collector",
-  "block.gentech.magma_collector": "Magma Collector",
+  "block.gentech.collector": "Collector",
 
   "_comment_items": "Item Names",
   "item.gentech.basic_speed_upgrade": "Basic Speed Upgrade",

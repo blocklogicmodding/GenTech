@@ -1,18 +1,19 @@
 package com.blocklogic.gentech.block.entity;
 
 import com.blocklogic.gentech.Config;
-import com.blocklogic.gentech.block.custom.HydroCollectorBlock;
-import com.blocklogic.gentech.block.custom.MagmaCollectorBlock;
+import com.blocklogic.gentech.config.CustomCollectorRecipeConfig;
 import com.blocklogic.gentech.item.GTItems;
 import com.blocklogic.gentech.screen.custom.CollectorMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -34,6 +35,8 @@ import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
 
     private static final int FLUID_CAPACITY = 10000;
@@ -49,19 +52,33 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
 
     private final ItemStackHandler itemHandler;
     private final FluidTank fluidTank;
-    private CollectorType type;
+
+    private Fluid currentTargetFluid = Fluids.EMPTY;
+    private CustomCollectorRecipeConfig.CollectorRecipe currentRecipe = null;
 
     private int lastFluidAmount = -1;
 
     public CollectorBlockEntity(BlockPos pos, BlockState blockState) {
         super(GTBlockEntities.COLLECTOR_BLOCK_ENTITY.get(), pos, blockState);
 
-        this.type = determineType(blockState);
+        this.itemHandler = new ItemStackHandler(1) {
+            @Override
+            public boolean isItemValid(int slot, ItemStack stack) {
+                return isValidSpeedUpgrade(stack);
+            }
+
+            @Override
+            protected void onContentsChanged(int slot) {
+                setChanged();
+            }
+        };
 
         this.fluidTank = new FluidTank(FLUID_CAPACITY) {
             @Override
             public boolean isFluidValid(FluidStack stack) {
-                return stack.getFluid() == getTargetFluid();
+                if (currentTargetFluid == Fluids.EMPTY) return true;
+                FluidStack existing = getFluid();
+                return existing.isEmpty() || existing.getFluid() == currentTargetFluid;
             }
 
             @Override
@@ -72,24 +89,6 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
                 }
             }
         };
-
-        this.itemHandler = new ItemStackHandler(1) {
-            @Override
-            protected void onContentsChanged(int slot) {
-                setChanged();
-            }
-
-            @Override
-            public boolean isItemValid(int slot, ItemStack stack) {
-                if (slot != UPGRADE_SLOT) return false;
-                return isValidSpeedUpgrade(stack);
-            }
-
-            @Override
-            public int getSlotLimit(int slot) {
-                return 1;
-            }
-        };
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, CollectorBlockEntity blockEntity) {
@@ -97,66 +96,86 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
             return;
         }
 
-        int currentFluid = blockEntity.fluidTank.getFluidAmount();
-        if (currentFluid != blockEntity.lastFluidAmount) {
-            blockEntity.lastFluidAmount = currentFluid;
-            level.sendBlockUpdated(pos, state, state, 3);
-            blockEntity.setChanged();
-        }
-
-        if (level.getGameTime() % VALIDATION_INTERVAL == 0 || blockEntity.lastValidatedTick == -1) {
+        if (level.getGameTime() % VALIDATION_INTERVAL == 0 ||
+                blockEntity.lastValidatedTick == -1 ||
+                level.getGameTime() - blockEntity.lastValidatedTick >= VALIDATION_INTERVAL) {
             blockEntity.validateSources();
             blockEntity.lastValidatedTick = (int) level.getGameTime();
         }
 
-        if (!blockEntity.hasValidSources || !blockEntity.canCollect()) {
-            if (blockEntity.progress > 0) {
-                blockEntity.progress = 0;
-                blockEntity.setChanged();
+        if (blockEntity.hasValidSources && blockEntity.canCollect()) {
+            blockEntity.progress++;
+
+            if (blockEntity.progress >= blockEntity.maxProgress) {
+                blockEntity.completeCollection();
             }
-            blockEntity.updateBlockState();
-            return;
+        } else {
+            blockEntity.progress = 0;
         }
 
-        if (blockEntity.maxProgress != blockEntity.getActualCollectionTime()) {
-            blockEntity.maxProgress = blockEntity.getActualCollectionTime();
-        }
-
-        blockEntity.progress++;
-
-        if (blockEntity.progress >= blockEntity.maxProgress) {
-            blockEntity.completeCollection();
-        }
-
-        blockEntity.updateBlockState();
         blockEntity.setChanged();
     }
 
     private void validateSources() {
         if (level == null) return;
 
-        int sourceCount = 0;
-        Fluid targetFluid = getTargetFluid();
+        hasValidSources = false;
+        currentTargetFluid = Fluids.EMPTY;
+        currentRecipe = null;
 
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             BlockPos adjacentPos = worldPosition.relative(direction);
             BlockState adjacentState = level.getBlockState(adjacentPos);
 
-            if (adjacentState.getFluidState().getType() == targetFluid &&
-                    adjacentState.getFluidState().isSource()) {
-                sourceCount++;
+            if (adjacentState.getFluidState().isSource()) {
+                Fluid detectedFluid = adjacentState.getFluidState().getType();
+
+                if (detectedFluid == Fluids.EMPTY) continue;
+
+                List<CustomCollectorRecipeConfig.CollectorRecipe> recipes =
+                        CustomCollectorRecipeConfig.getRecipesForFluid(detectedFluid);
+
+                if (!recipes.isEmpty()) {
+                    int sourceCount = countAdjacentSources(detectedFluid);
+
+                    CustomCollectorRecipeConfig.CollectorRecipe recipe = recipes.get(0);
+
+                    if (sourceCount >= recipe.minimumSources) {
+                        currentTargetFluid = detectedFluid;
+                        currentRecipe = recipe;
+                        hasValidSources = true;
+                        break;
+                    }
+                }
             }
         }
+    }
 
-        this.hasValidSources = sourceCount >= 2;
+    private int countAdjacentSources(Fluid fluid) {
+        if (level == null) return 0;
+
+        int count = 0;
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            BlockPos adjacentPos = worldPosition.relative(direction);
+            BlockState adjacentState = level.getBlockState(adjacentPos);
+
+            if (adjacentState.getFluidState().getType() == fluid &&
+                    adjacentState.getFluidState().isSource()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private boolean canCollect() {
-        return fluidTank.getSpace() >= FLUID_PER_COLLECTION;
+        if (currentRecipe == null) return false;
+        return fluidTank.getSpace() >= currentRecipe.fluidPerCollection;
     }
 
     private void completeCollection() {
-        FluidStack fluidToAdd = new FluidStack(getTargetFluid(), FLUID_PER_COLLECTION);
+        if (currentRecipe == null || currentTargetFluid == Fluids.EMPTY) return;
+
+        FluidStack fluidToAdd = new FluidStack(currentTargetFluid, currentRecipe.fluidPerCollection);
         fluidTank.fill(fluidToAdd, IFluidHandler.FluidAction.EXECUTE);
 
         this.progress = 0;
@@ -164,8 +183,10 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     private int getActualCollectionTime() {
+        if (currentRecipe == null) return BASE_COLLECTION_TIME;
+
         double speedMultiplier = getSpeedMultiplier();
-        return Math.max(1, (int) (BASE_COLLECTION_TIME / speedMultiplier));
+        return Math.max(1, (int) (currentRecipe.collectionTime / speedMultiplier));
     }
 
     private double getSpeedMultiplier() {
@@ -193,22 +214,6 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
                 item == GTItems.ULTIMATE_SPEED_UPGRADE.get();
     }
 
-    private CollectorType determineType(BlockState blockState) {
-        if (blockState.getBlock() instanceof HydroCollectorBlock) {
-            return CollectorType.HYDRO;
-        } else if (blockState.getBlock() instanceof MagmaCollectorBlock) {
-            return CollectorType.MAGMA;
-        }
-        return CollectorType.HYDRO;
-    }
-
-    private Fluid getTargetFluid() {
-        return switch (type) {
-            case HYDRO -> Fluids.WATER;
-            case MAGMA -> Fluids.LAVA;
-        };
-    }
-
     public float getProgressLevel() {
         if (maxProgress == 0) return 0.0f;
         return (float) progress / (float) maxProgress;
@@ -234,8 +239,12 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
         return hasValidSources;
     }
 
-    public CollectorType getCollectorType() {
-        return type;
+    public Fluid getCurrentTargetFluid() {
+        return currentTargetFluid;
+    }
+
+    public CustomCollectorRecipeConfig.CollectorRecipe getCurrentRecipe() {
+        return currentRecipe;
     }
 
     public @Nullable IFluidHandler getFluidHandler(Direction side) {
@@ -294,70 +303,7 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
 
     @Override
     public Component getDisplayName() {
-        return switch (type) {
-            case HYDRO -> Component.translatable("block.gentech.hydro_collector");
-            case MAGMA -> Component.translatable("block.gentech.magma_collector");
-        };
-    }
-
-    private void updateBlockState() {
-        if (level == null || level.isClientSide()) return;
-
-        BlockState currentState = level.getBlockState(worldPosition);
-        boolean shouldBeCollecting = hasValidSources && canCollect() && progress > 0;
-
-        if (currentState.getBlock() instanceof HydroCollectorBlock) {
-            boolean isCurrentlyCollecting = currentState.getValue(HydroCollectorBlock.COLLECTING);
-            if (isCurrentlyCollecting != shouldBeCollecting) {
-                BlockState newState = currentState.setValue(HydroCollectorBlock.COLLECTING, shouldBeCollecting);
-                level.setBlock(worldPosition, newState, 3);
-            }
-        } else if (currentState.getBlock() instanceof MagmaCollectorBlock) {
-            boolean isCurrentlyCollecting = currentState.getValue(MagmaCollectorBlock.COLLECTING);
-            if (isCurrentlyCollecting != shouldBeCollecting) {
-                BlockState newState = currentState.setValue(MagmaCollectorBlock.COLLECTING, shouldBeCollecting);
-                level.setBlock(worldPosition, newState, 3);
-            }
-        }
-    }
-
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        return new CollectorMenu(containerId, playerInventory, this);
-    }
-
-    @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.put("inventory", itemHandler.serializeNBT(registries));
-        tag.put("fluidTank", fluidTank.writeToNBT(registries, new CompoundTag()));
-        tag.putString("type", type.name());
-        tag.putInt("progress", progress);
-        tag.putInt("maxProgress", maxProgress);
-        tag.putBoolean("hasValidSources", hasValidSources);
-    }
-
-    @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        if (tag.contains("inventory")) {
-            itemHandler.deserializeNBT(registries, tag.getCompound("inventory"));
-        }
-        if (tag.contains("fluidTank")) {
-            fluidTank.readFromNBT(registries, tag.getCompound("fluidTank"));
-        }
-        if (tag.contains("type")) {
-            try {
-                this.type = CollectorType.valueOf(tag.getString("type"));
-            } catch (IllegalArgumentException e) {
-                this.type = determineType(getBlockState());
-            }
-        }
-
-        this.progress = tag.getInt("progress");
-        this.maxProgress = tag.getInt("maxProgress");
-        this.hasValidSources = tag.getBoolean("hasValidSources");
+        return Component.translatable("block.gentech.fluid_collector");
     }
 
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
@@ -415,7 +361,47 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
         return saveWithoutMetadata(registries);
     }
 
-    public enum CollectorType {
-        HYDRO, MAGMA
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
+        return new CollectorMenu(containerId, playerInventory, this);
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.put("inventory", itemHandler.serializeNBT(registries));
+        tag.put("fluidTank", fluidTank.writeToNBT(registries, new CompoundTag()));
+        tag.putInt("progress", progress);
+        tag.putInt("maxProgress", maxProgress);
+        tag.putBoolean("hasValidSources", hasValidSources);
+
+        if (currentTargetFluid != Fluids.EMPTY) {
+            tag.putString("currentTargetFluid", BuiltInRegistries.FLUID.getKey(currentTargetFluid).toString());
+        }
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        if (tag.contains("inventory")) {
+            itemHandler.deserializeNBT(registries, tag.getCompound("inventory"));
+        }
+        if (tag.contains("fluidTank")) {
+            fluidTank.readFromNBT(registries, tag.getCompound("fluidTank"));
+        }
+
+        this.progress = tag.getInt("progress");
+        this.maxProgress = tag.getInt("maxProgress");
+        this.hasValidSources = tag.getBoolean("hasValidSources");
+
+        if (tag.contains("currentTargetFluid")) {
+            try {
+                ResourceLocation fluidLocation = ResourceLocation.parse(tag.getString("currentTargetFluid"));
+                this.currentTargetFluid = BuiltInRegistries.FLUID.get(fluidLocation);
+            } catch (Exception e) {
+                this.currentTargetFluid = Fluids.EMPTY;
+            }
+        }
     }
 }

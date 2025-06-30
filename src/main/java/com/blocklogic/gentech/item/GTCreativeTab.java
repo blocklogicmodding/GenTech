@@ -28,8 +28,7 @@ public class GTCreativeTab {
                         output.accept(GTBlocks.DIAMOND_TANK);
                         output.accept(GTBlocks.NETHERITE_TANK);
 
-                        output.accept(GTBlocks.HYDRO_COLLECTOR);
-                        output.accept(GTBlocks.MAGMA_COLLECTOR);
+                        output.accept(GTBlocks.COLLECTOR);
 
                         output.accept(GTItems.BASIC_EFFICIENCY_UPGRADE);
                         output.accept(GTItems.ADVANCED_EFFICIENCY_UPGRADE);

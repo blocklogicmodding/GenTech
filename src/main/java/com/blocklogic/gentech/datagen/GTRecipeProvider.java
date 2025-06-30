@@ -101,25 +101,15 @@ public class GTRecipeProvider extends RecipeProvider implements IConditionBuilde
                 .unlockedBy("has_diamond_tank", has(GTBlocks.DIAMOND_TANK.get()))
                 .save(recipeOutput);
 
-        // Hydro Collector
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, GTBlocks.HYDRO_COLLECTOR.get())
-                .pattern("IGI")
+        // Collector
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, GTBlocks.COLLECTOR.get())
+                .pattern("IDI")
                 .pattern("GBG")
-                .pattern("IGI")
+                .pattern("IDI")
                 .define('I', Items.IRON_BLOCK)
+                .define('I', Items.DIAMOND)
                 .define('G', Tags.Items.GLASS_BLOCKS)
                 .define('B', Items.BUCKET)
-                .unlockedBy("has_iron_blocks", has(Items.IRON_BLOCK))
-                .save(recipeOutput);
-
-        // Magma Collector
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, GTBlocks.MAGMA_COLLECTOR.get())
-                .pattern("INI")
-                .pattern("NLN")
-                .pattern("INI")
-                .define('I', Items.IRON_BLOCK)
-                .define('N', Items.NETHERRACK)
-                .define('L', Items.LAVA_BUCKET)
                 .unlockedBy("has_iron_blocks", has(Items.IRON_BLOCK))
                 .save(recipeOutput);
 
