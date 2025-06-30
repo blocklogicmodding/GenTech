@@ -3,6 +3,7 @@ package com.blocklogic.gentech.command;
 import com.blocklogic.gentech.Config;
 import com.blocklogic.gentech.GenTech;
 import com.blocklogic.gentech.config.CustomGeneratorRecipeConfig;
+import com.blocklogic.gentech.config.CustomCollectorRecipeConfig;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.logging.LogUtils;
@@ -30,7 +31,12 @@ public class GTCommands {
                                 .then(Commands.literal("config")
                                         .executes(GTCommands::reloadMainConfig))
                                 .then(Commands.literal("recipes")
-                                        .executes(GTCommands::reloadRecipeConfig))
+                                        .then(Commands.literal("generator")
+                                                .executes(GTCommands::reloadGeneratorRecipes))
+                                        .then(Commands.literal("collector")
+                                                .executes(GTCommands::reloadCollectorRecipes))
+                                        .then(Commands.literal("all")
+                                                .executes(GTCommands::reloadAllRecipes)))
                                 .then(Commands.literal("all")
                                         .executes(GTCommands::reloadAllConfigs)))
         );
@@ -55,7 +61,7 @@ public class GTCommands {
         }
     }
 
-    private static int reloadRecipeConfig(CommandContext<CommandSourceStack> context) {
+    private static int reloadGeneratorRecipes(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
         try {
@@ -63,17 +69,98 @@ public class GTCommands {
 
             int recipeCount = CustomGeneratorRecipeConfig.getAllRecipes().size();
 
-            source.sendSuccess(() -> Component.literal("Custom generator recipes reloaded successfully! ")
+            source.sendSuccess(() -> Component.literal("Generator recipes reloaded successfully! ")
                     .withStyle(ChatFormatting.GREEN)
                     .append(Component.literal("(" + recipeCount + " recipes loaded)")
                             .withStyle(ChatFormatting.YELLOW)), true);
 
             return 1;
         } catch (Exception e) {
-            source.sendFailure(Component.literal("Failed to reload custom generator recipes: " + e.getMessage())
+            source.sendFailure(Component.literal("Failed to reload generator recipes: " + e.getMessage())
                     .withStyle(ChatFormatting.RED));
 
-            LOGGER.error("Failed to reload recipe config via command", e);
+            LOGGER.error("Failed to reload generator recipe config via command", e);
+            return 0;
+        }
+    }
+
+    private static int reloadCollectorRecipes(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        try {
+            CustomCollectorRecipeConfig.loadRecipes();
+
+            int recipeCount = CustomCollectorRecipeConfig.getAllRecipes().size();
+
+            source.sendSuccess(() -> Component.literal("Collector recipes reloaded successfully! ")
+                    .withStyle(ChatFormatting.GREEN)
+                    .append(Component.literal("(" + recipeCount + " recipes loaded)")
+                            .withStyle(ChatFormatting.YELLOW)), true);
+
+            return 1;
+        } catch (Exception e) {
+            source.sendFailure(Component.literal("Failed to reload collector recipes: " + e.getMessage())
+                    .withStyle(ChatFormatting.RED));
+
+            LOGGER.error("Failed to reload collector recipe config via command", e);
+            return 0;
+        }
+    }
+
+    private static int reloadAllRecipes(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        boolean generatorSuccess = false;
+        boolean collectorSuccess = false;
+
+        try {
+            CustomGeneratorRecipeConfig.loadRecipes();
+            generatorSuccess = true;
+        } catch (Exception e) {
+            source.sendFailure(Component.literal("Failed to reload generator recipes: " + e.getMessage())
+                    .withStyle(ChatFormatting.RED));
+            LOGGER.error("Failed to reload generator recipe config via command", e);
+        }
+
+        try {
+            CustomCollectorRecipeConfig.loadRecipes();
+            collectorSuccess = true;
+        } catch (Exception e) {
+            source.sendFailure(Component.literal("Failed to reload collector recipes: " + e.getMessage())
+                    .withStyle(ChatFormatting.RED));
+            LOGGER.error("Failed to reload collector recipe config via command", e);
+        }
+
+        if (generatorSuccess && collectorSuccess) {
+            int generatorCount = CustomGeneratorRecipeConfig.getAllRecipes().size();
+            int collectorCount = CustomCollectorRecipeConfig.getAllRecipes().size();
+
+            source.sendSuccess(() -> Component.literal("All recipes reloaded successfully! ")
+                    .withStyle(ChatFormatting.GREEN)
+                    .append(Component.literal("(Generator: " + generatorCount + ", Collector: " + collectorCount + ")")
+                            .withStyle(ChatFormatting.YELLOW)), true);
+            return 1;
+        } else if (generatorSuccess) {
+            int generatorCount = CustomGeneratorRecipeConfig.getAllRecipes().size();
+            source.sendSuccess(() -> Component.literal("Generator recipes reloaded successfully ")
+                    .withStyle(ChatFormatting.YELLOW)
+                    .append(Component.literal("(" + generatorCount + " recipes), ")
+                            .withStyle(ChatFormatting.YELLOW))
+                    .append(Component.literal("but collector recipe reload failed!")
+                            .withStyle(ChatFormatting.RED)), true);
+            return 1;
+        } else if (collectorSuccess) {
+            int collectorCount = CustomCollectorRecipeConfig.getAllRecipes().size();
+            source.sendSuccess(() -> Component.literal("Collector recipes reloaded successfully ")
+                    .withStyle(ChatFormatting.YELLOW)
+                    .append(Component.literal("(" + collectorCount + " recipes), ")
+                            .withStyle(ChatFormatting.YELLOW))
+                    .append(Component.literal("but generator recipe reload failed!")
+                            .withStyle(ChatFormatting.RED)), true);
+            return 1;
+        } else {
+            source.sendFailure(Component.literal("Both recipe reloads failed!")
+                    .withStyle(ChatFormatting.RED));
             return 0;
         }
     }
@@ -82,7 +169,8 @@ public class GTCommands {
         CommandSourceStack source = context.getSource();
 
         boolean mainConfigSuccess = false;
-        boolean recipeConfigSuccess = false;
+        boolean generatorRecipeSuccess = false;
+        boolean collectorRecipeSuccess = false;
 
         try {
             Config.loadConfig();
@@ -95,43 +183,55 @@ public class GTCommands {
 
         try {
             CustomGeneratorRecipeConfig.loadRecipes();
-            recipeConfigSuccess = true;
+            generatorRecipeSuccess = true;
         } catch (Exception e) {
-            source.sendFailure(Component.literal("Failed to reload custom generator recipes: " + e.getMessage())
+            source.sendFailure(Component.literal("Failed to reload generator recipes: " + e.getMessage())
                     .withStyle(ChatFormatting.RED));
-            LOGGER.error("Failed to reload recipe config via command", e);
+            LOGGER.error("Failed to reload generator recipe config via command", e);
         }
 
-        if (mainConfigSuccess && recipeConfigSuccess) {
-            int recipeCount = CustomGeneratorRecipeConfig.getAllRecipes().size();
+        try {
+            CustomCollectorRecipeConfig.loadRecipes();
+            collectorRecipeSuccess = true;
+        } catch (Exception e) {
+            source.sendFailure(Component.literal("Failed to reload collector recipes: " + e.getMessage())
+                    .withStyle(ChatFormatting.RED));
+            LOGGER.error("Failed to reload collector recipe config via command", e);
+        }
+
+        if (mainConfigSuccess && generatorRecipeSuccess && collectorRecipeSuccess) {
+            int generatorCount = CustomGeneratorRecipeConfig.getAllRecipes().size();
+            int collectorCount = CustomCollectorRecipeConfig.getAllRecipes().size();
 
             source.sendSuccess(() -> Component.literal("All GenTech configurations reloaded successfully! ")
                     .withStyle(ChatFormatting.GREEN)
-                    .append(Component.literal("(" + recipeCount + " recipes loaded)")
-                            .withStyle(ChatFormatting.YELLOW)), true);
-
-            return 1;
-        } else if (mainConfigSuccess) {
-            source.sendSuccess(() -> Component.literal("Main configuration reloaded successfully, but recipe reload failed!")
-                    .withStyle(ChatFormatting.YELLOW), true);
-
-            return 1;
-        } else if (recipeConfigSuccess) {
-            int recipeCount = CustomGeneratorRecipeConfig.getAllRecipes().size();
-
-            source.sendSuccess(() -> Component.literal("Custom generator recipes reloaded successfully ")
-                    .withStyle(ChatFormatting.YELLOW)
-                    .append(Component.literal("(" + recipeCount + " recipes loaded), ")
-                            .withStyle(ChatFormatting.YELLOW))
-                    .append(Component.literal("but main config reload failed!")
+                    .append(Component.literal("(Generator: " + generatorCount + ", Collector: " + collectorCount + " recipes)")
                             .withStyle(ChatFormatting.YELLOW)), true);
 
             return 1;
         } else {
-            source.sendFailure(Component.literal("Both configuration reloads failed!")
-                    .withStyle(ChatFormatting.RED));
+            StringBuilder message = new StringBuilder();
+            if (mainConfigSuccess) message.append("Main config reloaded. ");
+            if (generatorRecipeSuccess) {
+                int count = CustomGeneratorRecipeConfig.getAllRecipes().size();
+                message.append("Generator recipes (").append(count).append(") reloaded. ");
+            }
+            if (collectorRecipeSuccess) {
+                int count = CustomCollectorRecipeConfig.getAllRecipes().size();
+                message.append("Collector recipes (").append(count).append(") reloaded. ");
+            }
 
-            return 0;
+            if (message.length() > 0) {
+                source.sendSuccess(() -> Component.literal(message.toString())
+                        .withStyle(ChatFormatting.YELLOW)
+                        .append(Component.literal("Some reloads failed!")
+                                .withStyle(ChatFormatting.RED)), true);
+                return 1;
+            } else {
+                source.sendFailure(Component.literal("All configuration reloads failed!")
+                        .withStyle(ChatFormatting.RED));
+                return 0;
+            }
         }
     }
 }

@@ -1,5 +1,5 @@
-// 1.21.1	2025-06-30T20:15:43.3271172	Tags for minecraft:block mod id gentech
-ff3ffaf996bc46ecdb8ac3ada8cda9c1e859d432 data/gentech/tags/block/gentech_collectors.json
+// 1.21.1	2025-06-30T23:37:26.3120878	Tags for minecraft:block mod id gentech
+334c33f30f7631bffe123d3c7fb049e2b432fea6 data/gentech/tags/block/gentech_collectors.json
 c5a5b023fc46a32cced47b40cbf600797cf2d85a data/gentech/tags/block/gentech_generators.json
 f063e7e8021d992148c4b12b6f7b25bc4d92918d data/gentech/tags/block/gentech_tanks.json
-b368c4c7ac62c078db952dbd1b029013ef00b231 data/minecraft/tags/block/mineable/pickaxe.json
+cd19fdf22e04ad89415a5abcaa3a1921cbfded9b data/minecraft/tags/block/mineable/pickaxe.json

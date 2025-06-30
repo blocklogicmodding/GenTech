@@ -5,6 +5,9 @@
     "B": {
       "item": "minecraft:bucket"
     },
+    "D": {
+      "item": "minecraft:diamond"
+    },
     "G": {
       "tag": "c:glass_blocks"
     },
@@ -13,12 +16,12 @@
     }
   },
   "pattern": [
-    "IGI",
+    "IDI",
     "GBG",
-    "IGI"
+    "IDI"
   ],
   "result": {
     "count": 1,
-    "id": "gentech:hydro_collector"
+    "id": "gentech:collector"
   }
 }

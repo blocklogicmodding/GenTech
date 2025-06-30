@@ -107,7 +107,7 @@ public class GTRecipeProvider extends RecipeProvider implements IConditionBuilde
                 .pattern("GBG")
                 .pattern("IDI")
                 .define('I', Items.IRON_BLOCK)
-                .define('I', Items.DIAMOND)
+                .define('D', Items.DIAMOND)
                 .define('G', Tags.Items.GLASS_BLOCKS)
                 .define('B', Items.BUCKET)
                 .unlockedBy("has_iron_blocks", has(Items.IRON_BLOCK))

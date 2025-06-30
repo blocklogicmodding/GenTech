@@ -27,6 +27,7 @@ public class Config {
     // ========================================
 
     public static final String CATEGORY_GENERATORS = "generators";
+    public static final String CATEGORY_COLLECTORS = "collectors";
     public static final String CATEGORY_UPGRADES = "upgrades";
     public static final String CATEGORY_BLOCK_CATEGORIES = "block_categories";
 
@@ -71,6 +72,14 @@ public class Config {
     public static ModConfigSpec.IntValue NETHERITE_GENERATOR_FLUID_BUFFER;
 
     // ========================================
+    // COLLECTOR CONFIGURATION
+    // ========================================
+
+    public static ModConfigSpec.IntValue COLLECTOR_FLUID_CAPACITY;
+    public static ModConfigSpec.IntValue COLLECTOR_BASE_COLLECTION_TIME;
+    public static ModConfigSpec.IntValue COLLECTOR_VALIDATION_INTERVAL;
+
+    // ========================================
     // UPGRADE CONFIGURATION
     // ========================================
 
@@ -85,7 +94,7 @@ public class Config {
     public static ModConfigSpec.DoubleValue ULTIMATE_EFFICIENCY_UPGRADE_REDUCTION;
 
     // ========================================
-    // BLOCK CATEGORY CONFIGURATION
+    // BLOCK CATEGORIES
     // ========================================
 
     public static ModConfigSpec.ConfigValue<List<? extends String>> SOFT_GENERATABLE_BLOCKS;
@@ -98,6 +107,7 @@ public class Config {
 
     private static void registerCommonConfigs(ModContainer container) {
         generatorConfig();
+        collectorConfig();
         upgradeConfig();
         blockCategoryConfig();
         COMMON_CONFIG = COMMON_BUILDER.build();
@@ -183,6 +193,21 @@ public class Config {
         NETHERITE_GENERATOR_FLUID_BUFFER = COMMON_BUILDER.comment("Fluid buffer capacity (mb)")
                 .defineInRange("fluid_buffer", 100000, 1000, 1000000);
         COMMON_BUILDER.pop();
+
+        COMMON_BUILDER.pop();
+    }
+
+    private static void collectorConfig() {
+        COMMON_BUILDER.comment("Collector Settings - Configure default collection behavior").push(CATEGORY_COLLECTORS);
+
+        COLLECTOR_FLUID_CAPACITY = COMMON_BUILDER.comment("Default fluid tank capacity for collectors (mb) - Note: individual recipes can override collection amounts")
+                .defineInRange("fluid_capacity", 10000, 1000, 1000000);
+
+        COLLECTOR_BASE_COLLECTION_TIME = COMMON_BUILDER.comment("Default base collection time in ticks when no recipe is found (20 ticks = 1 second)")
+                .defineInRange("base_collection_time", 600, 1, 72000);
+
+        COLLECTOR_VALIDATION_INTERVAL = COMMON_BUILDER.comment("How often to check for adjacent fluid sources (ticks)")
+                .defineInRange("validation_interval", 20, 1, 600);
 
         COMMON_BUILDER.pop();
     }
@@ -370,6 +395,22 @@ public class Config {
     }
 
     // ========================================
+    // GETTER METHODS FOR COLLECTOR SETTINGS
+    // ========================================
+
+    public static int getCollectorFluidCapacity() {
+        return COLLECTOR_FLUID_CAPACITY.get();
+    }
+
+    public static int getCollectorBaseCollectionTime() {
+        return COLLECTOR_BASE_COLLECTION_TIME.get();
+    }
+
+    public static int getCollectorValidationInterval() {
+        return COLLECTOR_VALIDATION_INTERVAL.get();
+    }
+
+    // ========================================
     // GETTER METHODS FOR UPGRADE SETTINGS
     // ========================================
 
@@ -400,52 +441,58 @@ public class Config {
     }
 
     // ========================================
-    // GETTER METHODS FOR BLOCK CATEGORIES
+    // BLOCK CATEGORY GETTERS
     // ========================================
 
-    public static List<? extends String> getSoftGeneratableBlocks() {
-        return SOFT_GENERATABLE_BLOCKS.get();
+    @SuppressWarnings("unchecked")
+    public static List<String> getSoftGeneratableBlocks() {
+        return (List<String>) SOFT_GENERATABLE_BLOCKS.get();
     }
 
-    public static List<? extends String> getMediumGeneratableBlocks() {
-        return MEDIUM_GENERATABLE_BLOCKS.get();
+    @SuppressWarnings("unchecked")
+    public static List<String> getMediumGeneratableBlocks() {
+        return (List<String>) MEDIUM_GENERATABLE_BLOCKS.get();
     }
 
-    public static List<? extends String> getHardGeneratableBlocks() {
-        return HARD_GENERATABLE_BLOCKS.get();
+    @SuppressWarnings("unchecked")
+    public static List<String> getHardGeneratableBlocks() {
+        return (List<String>) HARD_GENERATABLE_BLOCKS.get();
     }
 
-    private static boolean validateBlockName(final Object obj) {
+    public static List<String> getValidatedSoftGeneratableBlocks() {
+        return validateBlockNames(getSoftGeneratableBlocks(), "soft");
+    }
+
+    public static List<String> getValidatedMediumGeneratableBlocks() {
+        return validateBlockNames(getMediumGeneratableBlocks(), "medium");
+    }
+
+    public static List<String> getValidatedHardGeneratableBlocks() {
+        return validateBlockNames(getHardGeneratableBlocks(), "hard");
+    }
+
+    // ========================================
+    // VALIDATION METHODS
+    // ========================================
+
+    private static boolean validateBlockName(Object obj) {
         if (!(obj instanceof String blockName)) {
             return false;
         }
 
+        if (blockName.isEmpty()) {
+            return false;
+        }
+
         try {
-            ResourceLocation resourceLocation = ResourceLocation.parse(blockName);
-            boolean isValid = BuiltInRegistries.BLOCK.containsKey(resourceLocation);
-            if (!isValid) {
-                LOGGER.warn("Invalid block name in config: '{}' - block not found in registry. Skipping entry.", blockName);
-            }
-            return isValid;
+            ResourceLocation location = ResourceLocation.parse(blockName);
+            return BuiltInRegistries.BLOCK.containsKey(location);
         } catch (Exception e) {
-            LOGGER.warn("Invalid block name format in config: '{}' - {}. Skipping entry.", blockName, e.getMessage());
             return false;
         }
     }
 
-    public static List<String> getValidatedSoftGeneratableBlocks() {
-        return validateAndFilterBlockList(getSoftGeneratableBlocks(), "soft");
-    }
-
-    public static List<String> getValidatedMediumGeneratableBlocks() {
-        return validateAndFilterBlockList(getMediumGeneratableBlocks(), "medium");
-    }
-
-    public static List<String> getValidatedHardGeneratableBlocks() {
-        return validateAndFilterBlockList(getHardGeneratableBlocks(), "hard");
-    }
-
-    private static List<String> validateAndFilterBlockList(List<? extends String> blockList, String categoryName) {
+    private static List<String> validateBlockNames(List<? extends String> blockList, String categoryName) {
         List<String> validBlocks = new ArrayList<>();
         int invalidCount = 0;
 
@@ -515,6 +562,10 @@ public class Config {
                 getNetheriteGeneratorHardSpeed(), getNetheriteGeneratorHardConsumption(),
                 getNetheriteGeneratorFluidBuffer());
 
+        LOGGER.info("Collector Configuration:");
+        LOGGER.info("  Fluid Capacity: {}mb, Base Collection Time: {}t, Validation Interval: {}t",
+                getCollectorFluidCapacity(), getCollectorBaseCollectionTime(), getCollectorValidationInterval());
+
         LOGGER.info("Upgrade Configuration:");
         LOGGER.info("  Speed Upgrades - Basic: {}x, Advanced: {}x, Ultimate: {}x",
                 getBasicSpeedUpgradeMultiplier(), getAdvancedSpeedUpgradeMultiplier(), getUltimateSpeedUpgradeMultiplier());
@@ -522,8 +573,8 @@ public class Config {
                 getBasicEfficiencyUpgradeReduction() * 100, getAdvancedEfficiencyUpgradeReduction() * 100, getUltimateEfficiencyUpgradeReduction() * 100);
 
         LOGGER.info("Block Categories:");
-        LOGGER.info("  Soft Blocks: {}/{} valid", getValidatedSoftGeneratableBlocks().size(), getSoftGeneratableBlocks().size());
-        LOGGER.info("  Medium Blocks: {}/{} valid", getValidatedMediumGeneratableBlocks().size(), getMediumGeneratableBlocks().size());
-        LOGGER.info("  Hard Blocks: {}/{} valid", getValidatedHardGeneratableBlocks().size(), getHardGeneratableBlocks().size());
+        LOGGER.info("  Soft blocks: {} configured", getValidatedSoftGeneratableBlocks().size());
+        LOGGER.info("  Medium blocks: {} configured", getValidatedMediumGeneratableBlocks().size());
+        LOGGER.info("  Hard blocks: {} configured", getValidatedHardGeneratableBlocks().size());
     }
 }

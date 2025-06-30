@@ -25,8 +25,7 @@ public class GTBlockEntities {
     public static final Supplier<BlockEntityType<CollectorBlockEntity>> COLLECTOR_BLOCK_ENTITY =
             BLOCK_ENTITIES.register("collector_block_entity", () -> BlockEntityType.Builder.of(
                     CollectorBlockEntity::new,
-                    GTBlocks.HYDRO_COLLECTOR.get(),
-                    GTBlocks.MAGMA_COLLECTOR.get()
+                    GTBlocks.COLLECTOR.get()
             ).build(null));
 
     public static final Supplier<BlockEntityType<TankBlockEntity>> TANK_BLOCK_ENTITY =

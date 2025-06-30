@@ -11,6 +11,7 @@
   "block.gentech.netherite_tank": "Netherite Tank",
 
   "block.gentech.collector": "Collector",
+  "block.gentech.fluid_collector": "Fluid Collector",
 
   "_comment_items": "Item Names",
   "item.gentech.basic_speed_upgrade": "Basic Speed Upgrade",
@@ -75,13 +76,16 @@
   "tooltip.gentech.generator.hard_blocks": "• Hard Blocks: %ss",
   "tooltip.gentech.generator.usage": "Place above any valid block to generate it",
 
+  "_comment_collector_tooltips": "Collector Tooltips - Used in CollectorScreen",
   "tooltip.gentech.collection_progress": "Collection Progress",
   "tooltip.gentech.collecting_fluid": "Collecting %s",
   "tooltip.gentech.status.no_sources": "No Valid Sources",
   "tooltip.gentech.requires_sources": "Requires 2+ %s source blocks adjacent",
+  "tooltip.gentech.requires_fluid_sources": "Requires adjacent fluid source blocks",
   "tooltip.gentech.status.tank_full": "Tank Full",
   "tooltip.gentech.collector_export": "Export: Top/Bottom Only",
 
+  "_comment_tank_tooltips": "Tank Tooltips - Used in tank block classes",
   "tooltip.gentech.tank.tier.copper": "Copper Storage Tank",
   "tooltip.gentech.tank.tier.iron": "Iron Storage Tank",
   "tooltip.gentech.tank.tier.diamond": "Diamond Storage Tank",

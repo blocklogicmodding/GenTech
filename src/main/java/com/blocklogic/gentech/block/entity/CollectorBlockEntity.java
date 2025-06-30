@@ -7,13 +7,11 @@ import com.blocklogic.gentech.screen.custom.CollectorMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -39,16 +37,12 @@ import java.util.List;
 
 public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
 
-    private static final int FLUID_CAPACITY = 10000;
-    private static final int BASE_COLLECTION_TIME = 600;
-    private static final int FLUID_PER_COLLECTION = 1000;
     private static final int UPGRADE_SLOT = 0;
 
     private int progress = 0;
-    private int maxProgress = BASE_COLLECTION_TIME;
+    private int maxProgress;
     private boolean hasValidSources = false;
     private int lastValidatedTick = -1;
-    private static final int VALIDATION_INTERVAL = 20;
 
     private final ItemStackHandler itemHandler;
     private final FluidTank fluidTank;
@@ -60,6 +54,8 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
 
     public CollectorBlockEntity(BlockPos pos, BlockState blockState) {
         super(GTBlockEntities.COLLECTOR_BLOCK_ENTITY.get(), pos, blockState);
+
+        this.maxProgress = Config.getCollectorBaseCollectionTime();
 
         this.itemHandler = new ItemStackHandler(1) {
             @Override
@@ -73,7 +69,7 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
             }
         };
 
-        this.fluidTank = new FluidTank(FLUID_CAPACITY) {
+        this.fluidTank = new FluidTank(Config.getCollectorFluidCapacity()) {
             @Override
             public boolean isFluidValid(FluidStack stack) {
                 if (currentTargetFluid == Fluids.EMPTY) return true;
@@ -96,9 +92,10 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
             return;
         }
 
-        if (level.getGameTime() % VALIDATION_INTERVAL == 0 ||
+        int validationInterval = Config.getCollectorValidationInterval();
+        if (level.getGameTime() % validationInterval == 0 ||
                 blockEntity.lastValidatedTick == -1 ||
-                level.getGameTime() - blockEntity.lastValidatedTick >= VALIDATION_INTERVAL) {
+                level.getGameTime() - blockEntity.lastValidatedTick >= validationInterval) {
             blockEntity.validateSources();
             blockEntity.lastValidatedTick = (int) level.getGameTime();
         }
@@ -183,7 +180,9 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     private int getActualCollectionTime() {
-        if (currentRecipe == null) return BASE_COLLECTION_TIME;
+        if (currentRecipe == null) {
+            return Config.getCollectorBaseCollectionTime();
+        }
 
         double speedMultiplier = getSpeedMultiplier();
         return Math.max(1, (int) (currentRecipe.collectionTime / speedMultiplier));
@@ -306,6 +305,58 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
         return Component.translatable("block.gentech.fluid_collector");
     }
 
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
+        return new CollectorMenu(containerId, playerInventory, this);
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.put("inventory", itemHandler.serializeNBT(registries));
+        tag.put("fluid_tank", fluidTank.writeToNBT(registries, new CompoundTag()));
+        tag.putInt("progress", progress);
+        tag.putInt("max_progress", maxProgress);
+        tag.putBoolean("has_valid_sources", hasValidSources);
+        tag.putInt("last_validated_tick", lastValidatedTick);
+
+        if (currentTargetFluid != Fluids.EMPTY) {
+            tag.putString("current_target_fluid", currentTargetFluid.toString());
+        }
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        itemHandler.deserializeNBT(registries, tag.getCompound("inventory"));
+        fluidTank.readFromNBT(registries, tag.getCompound("fluid_tank"));
+        progress = tag.getInt("progress");
+        maxProgress = tag.getInt("max_progress");
+        hasValidSources = tag.getBoolean("has_valid_sources");
+        lastValidatedTick = tag.getInt("last_validated_tick");
+
+        if (tag.contains("current_target_fluid")) {
+            try {
+                String fluidName = tag.getString("current_target_fluid");
+                currentTargetFluid = Fluids.EMPTY;
+            } catch (Exception e) {
+                currentTargetFluid = Fluids.EMPTY;
+            }
+        }
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveWithoutMetadata(registries);
+    }
+
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, GTBlockEntities.COLLECTOR_BLOCK_ENTITY.get(),
                 (blockEntity, direction) -> {
@@ -339,69 +390,6 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
         if (level != null && !level.isClientSide()) {
             level.invalidateCapabilities(getBlockPos());
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
-        }
-    }
-
-    @Override
-    public void onLoad() {
-        super.onLoad();
-        if (level != null && !level.isClientSide()) {
-            level.invalidateCapabilities(getBlockPos());
-        }
-    }
-
-    @Nullable
-    @Override
-    public Packet<ClientGamePacketListener> getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
-    }
-
-    @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveWithoutMetadata(registries);
-    }
-
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        return new CollectorMenu(containerId, playerInventory, this);
-    }
-
-    @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.put("inventory", itemHandler.serializeNBT(registries));
-        tag.put("fluidTank", fluidTank.writeToNBT(registries, new CompoundTag()));
-        tag.putInt("progress", progress);
-        tag.putInt("maxProgress", maxProgress);
-        tag.putBoolean("hasValidSources", hasValidSources);
-
-        if (currentTargetFluid != Fluids.EMPTY) {
-            tag.putString("currentTargetFluid", BuiltInRegistries.FLUID.getKey(currentTargetFluid).toString());
-        }
-    }
-
-    @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        if (tag.contains("inventory")) {
-            itemHandler.deserializeNBT(registries, tag.getCompound("inventory"));
-        }
-        if (tag.contains("fluidTank")) {
-            fluidTank.readFromNBT(registries, tag.getCompound("fluidTank"));
-        }
-
-        this.progress = tag.getInt("progress");
-        this.maxProgress = tag.getInt("maxProgress");
-        this.hasValidSources = tag.getBoolean("hasValidSources");
-
-        if (tag.contains("currentTargetFluid")) {
-            try {
-                ResourceLocation fluidLocation = ResourceLocation.parse(tag.getString("currentTargetFluid"));
-                this.currentTargetFluid = BuiltInRegistries.FLUID.get(fluidLocation);
-            } catch (Exception e) {
-                this.currentTargetFluid = Fluids.EMPTY;
-            }
         }
     }
 }

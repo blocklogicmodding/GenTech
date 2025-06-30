@@ -13,6 +13,7 @@ import com.blocklogic.gentech.client.renderer.GeneratorBlockEntityRenderer;
 import com.blocklogic.gentech.client.renderer.TankBlockEntityRenderer;
 import com.blocklogic.gentech.command.GTCommands;
 import com.blocklogic.gentech.component.GTDataComponents;
+import com.blocklogic.gentech.config.CustomCollectorRecipeConfig;
 import com.blocklogic.gentech.config.CustomGeneratorRecipeConfig;
 import com.blocklogic.gentech.item.GTCreativeTab;
 import com.blocklogic.gentech.item.GTItems;
@@ -91,6 +92,7 @@ public class GenTech {
     private void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             CustomGeneratorRecipeConfig.loadRecipes();
+            CustomCollectorRecipeConfig.loadRecipes();
         });
     }
 

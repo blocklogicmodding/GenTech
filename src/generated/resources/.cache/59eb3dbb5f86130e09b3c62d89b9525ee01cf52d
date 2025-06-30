@@ -1,11 +1,10 @@
-// 1.21.1	2025-06-30T20:15:43.3300936	Loot Tables
+// 1.21.1	2025-06-30T23:37:26.3210156	Loot Tables
+0eb377c42666cd1b5fb4d4aa2e7d56a32b3a4d1f data/gentech/loot_table/blocks/collector.json
 453bd6e220a29bdee8ce0c715711c96f7e269d52 data/gentech/loot_table/blocks/copper_generator.json
 1eb2b58d1e456bca79107ff4022c14b2c58ff3f7 data/gentech/loot_table/blocks/copper_tank.json
 d2229b74f2bd3eedf7ef75d0a93b3b3566b76939 data/gentech/loot_table/blocks/diamond_generator.json
 083528acacd776ef4865e9e5c86aa51917245cc7 data/gentech/loot_table/blocks/diamond_tank.json
-7e1139320ca873f0b177e39a9add3613263477fd data/gentech/loot_table/blocks/hydro_collector.json
 21b220eabca2f40abba5082cc72d6bef14fd6f34 data/gentech/loot_table/blocks/iron_generator.json
 e4575118ad5478a147d5f11a560788b7e745779a data/gentech/loot_table/blocks/iron_tank.json
-ade2179b4721463bf809a4b41e9d73b03340c2f3 data/gentech/loot_table/blocks/magma_collector.json
 8f6f0ffcf5ad557b9386f0fcdc2f7236ae21e977 data/gentech/loot_table/blocks/netherite_generator.json
 b0b05ecd9152ba97407131db0e40e564d7e4170a data/gentech/loot_table/blocks/netherite_tank.json

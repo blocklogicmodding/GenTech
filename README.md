@@ -3,7 +3,8 @@
 
 ![GenTech](https://deonjonker.com/blm/gentech/gt_banner2.png)
 
-A Minecraft mod that adds tiered block generators powered by fluid combinations. Generate blocks by placing generators above them and supplying the required fluids.
+
+A Minecraft mod that adds tiered block generators, fluid collectors, and storage tanks. Generate blocks by placing generators above them, collect fluids from source blocks, and store everything efficiently.
 
 ## Features
 
@@ -14,9 +15,27 @@ A Minecraft mod that adds tiered block generators powered by fluid combinations.
 -   **Diamond Generator** - 2 upgrade slots, faster generation
 -   **Netherite Generator** - 3 upgrade slots, ultimate performance
 
+**Fluid Collector:**
+
+-   **Configurable Collector** - Collect any fluid from adjacent source blocks
+-   Automatically detects and collects water, lava, or any modded fluid
+-   Requires 2+ source blocks adjacent to the collector
+-   Upgradeable with speed modules for faster collection
+-   Export fluids through top/bottom connections
+
+**Four Tank Tiers:**
+
+-   **Copper Tank** - 10,000 mB capacity
+-   **Iron Tank** - 50,000 mB capacity
+-   **Diamond Tank** - 100,000 mB capacity
+-   **Netherite Tank** - 250,000 mB capacity
+-   Store any fluid type with input/output on all sides
+-   Right-click with buckets to fill/empty
+-   Preserve fluid contents when broken
+
 **Upgrade System:**
 
--   **Speed Upgrades** - Reduce generation time (Basic, Advanced, Ultimate)
+-   **Speed Upgrades** - Reduce generation/collection time (Basic, Advanced, Ultimate)
 -   **Efficiency Upgrades** - Lower fluid consumption (Basic, Advanced, Ultimate)
 -   **Tier Upgrades** - Convert generators to higher tiers while preserving contents
 
@@ -32,12 +51,13 @@ A Minecraft mod that adds tiered block generators powered by fluid combinations.
 -   Dual fluid tanks with directional input (East/West sides)
 -   Automatic output to chests placed above generators
 -   Item extraction via logistics from North/South sides
--   Persistent fluid storage when breaking/placing generators
+-   Persistent fluid storage when breaking/placing generators and tanks
 
 **Customization:**
 
 -   Extensive configuration file for speeds, costs, and fluid buffers (`config/gentech-common.toml`)
--   Custom recipe system via TOML files (`config/gentech/custom-generator-recipes.toml`)
+-   Custom generator recipe system via TOML files (`config/gentech/custom-generator-recipes.toml`)
+-   Custom collector recipe system via TOML files (`config/gentech/custom-collector-recipes.toml`)
 -   Support for modded fluids and blocks
 -   Hot config reloading with `/gentech reload` command
 
@@ -53,6 +73,7 @@ The mod creates configuration files in `config/gentech/`:
 
 -   `gentech-common.toml` - Main settings for speeds, costs, and block categories
 -   `custom_generator_recipes.toml` - Define custom fluid combinations and blocks
+-   `custom_collector_recipes.toml` - Define which fluids can be collected and collection rates
 
 Use `/gentech reload` to apply configuration changes without restarting.
 

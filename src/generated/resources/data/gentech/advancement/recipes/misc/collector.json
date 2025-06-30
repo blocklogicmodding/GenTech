@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "gentech:magma_collector"
+        "recipe": "gentech:collector"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "gentech:magma_collector"
+      "gentech:collector"
     ]
   }
 }

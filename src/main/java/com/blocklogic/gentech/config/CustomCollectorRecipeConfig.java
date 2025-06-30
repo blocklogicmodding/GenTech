@@ -19,7 +19,11 @@ import java.util.regex.Pattern;
 
 public class CustomCollectorRecipeConfig {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final String CONFIG_FILE_NAME = "gentech_collector_recipes.toml";
+
+    private static final String CONFIG_DIR = "gentech";
+    private static final String RECIPES_FILE = "custom_collector_recipes.toml";
+    private static final String ERROR_DIR = "config_errors";
+
     private static final Pattern VALID_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]+$");
 
     private static final Map<String, CollectorRecipe> loadedRecipes = new HashMap<>();
@@ -54,10 +58,14 @@ public class CustomCollectorRecipeConfig {
         recipesByFluid.clear();
         currentSessionErrors.clear();
 
-        Path configDir = FMLPaths.CONFIGDIR.get();
-        Path recipesFile = configDir.resolve(CONFIG_FILE_NAME);
+        Path configDir = FMLPaths.CONFIGDIR.get().resolve(CONFIG_DIR);
+        Path recipesFile = configDir.resolve(RECIPES_FILE);
 
         try {
+            if (!Files.exists(configDir)) {
+                Files.createDirectories(configDir);
+            }
+
             if (!Files.exists(recipesFile)) {
                 LOGGER.info("Collector recipes file not found, creating default: {}", recipesFile);
                 createDefaultRecipesFile(recipesFile);
@@ -187,7 +195,6 @@ public class CustomCollectorRecipeConfig {
     private static List<Map<String, String>> parseTomlRecipes(List<String> lines) {
         List<Map<String, String>> recipes = new ArrayList<>();
         Map<String, String> currentRecipe = null;
-        boolean inRecipeSection = false;
         int lineNumber = 0;
 
         for (String line : lines) {
@@ -203,22 +210,20 @@ public class CustomCollectorRecipeConfig {
                     recipes.add(currentRecipe);
                 }
                 currentRecipe = new HashMap<>();
-                inRecipeSection = true;
                 continue;
             }
 
-            if (inRecipeSection && currentRecipe != null) {
-                if (trimmedLine.contains("=")) {
-                    String[] parts = trimmedLine.split("=", 2);
-                    if (parts.length == 2) {
-                        String key = parts[0].trim();
-                        String value = parts[1].trim().replaceAll("^\"|\"$", "");
-                        currentRecipe.put(key, value);
+            if (currentRecipe != null && trimmedLine.contains("=")) {
+                String[] parts = trimmedLine.split("=", 2);
+                if (parts.length == 2) {
+                    String key = parts[0].trim();
+                    String value = parts[1].trim();
+                    if (value.startsWith("\"") && value.endsWith("\"")) {
+                        value = value.substring(1, value.length() - 1);
                     }
-                } else if (!trimmedLine.startsWith("#")) {
-                    logError("TOML parsing error", "Unexpected line outside recipe section: " + trimmedLine, lineNumber);
+                    currentRecipe.put(key, value);
                 }
-            } else if (!trimmedLine.startsWith("#")) {
+            } else if (!trimmedLine.isEmpty() && !trimmedLine.startsWith("#")) {
                 logError("TOML parsing error", "Unexpected line outside recipe section: " + trimmedLine, lineNumber);
             }
         }
@@ -295,7 +300,7 @@ public class CustomCollectorRecipeConfig {
             return null;
         }
 
-        int priority = 1; // default priority
+        int priority = 1;
         if (priorityStr != null) {
             try {
                 priority = Integer.parseInt(priorityStr);
@@ -344,23 +349,42 @@ public class CustomCollectorRecipeConfig {
 
     private static void initializeErrorLog() {
         try {
-            Path configDir = FMLPaths.CONFIGDIR.get();
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
-            currentErrorFile = configDir.resolve("gentech_collector_recipe_errors_" + timestamp + ".log");
+            Path configDir = FMLPaths.CONFIGDIR.get().resolve(CONFIG_DIR);
+            Path errorDir = configDir.resolve(ERROR_DIR);
 
-            String header = "GenTech Collector Recipe Loading Errors - " + LocalDateTime.now() + "\n" +
-                    "=" + "=".repeat(60) + "\n\n";
-            Files.writeString(currentErrorFile, header, StandardOpenOption.CREATE);
-        } catch (IOException e) {
-            LOGGER.error("Failed to initialize error log: {}", e.getMessage());
+            if (!Files.exists(errorDir)) {
+                Files.createDirectories(errorDir);
+            }
+
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
+            currentErrorFile = errorDir.resolve(timestamp + "_collector_recipe_errors.log");
+
+            String header = String.format("=== GenTech Collector Recipe Error Log ===%n" +
+                            "Session started: %s%n" +
+                            "Config file: %s%n" +
+                            "========================================%n%n",
+                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                    FMLPaths.CONFIGDIR.get().resolve(CONFIG_DIR).resolve(RECIPES_FILE));
+
+            Files.writeString(currentErrorFile, header, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+
+        } catch (Exception e) {
+            LOGGER.error("Failed to initialize error logging: {}", e.getMessage(), e);
+            currentErrorFile = null;
         }
     }
 
     private static void finalizeErrorLog() {
         if (currentErrorFile != null) {
             try {
-                String footer = "\n" + "=".repeat(60) + "\n" +
-                        "Total errors: " + currentSessionErrors.size() + "\n";
+                String footer = String.format("%n========================================%n" +
+                                "Session completed: %s%n" +
+                                "Total errors: %d%n" +
+                                "Total recipes loaded: %d%n" +
+                                "========================================%n",
+                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                        currentSessionErrors.size(),
+                        loadedRecipes.size());
                 Files.writeString(currentErrorFile, footer, StandardOpenOption.APPEND);
             } catch (IOException e) {
                 LOGGER.error("Failed to finalize error log: {}", e.getMessage());

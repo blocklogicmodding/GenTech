@@ -10,6 +10,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 
@@ -137,11 +139,15 @@ public class CollectorScreen extends AbstractContainerScreen<CollectorMenu> {
             if (!fluidStack.isEmpty()) {
                 tooltip.add(fluidStack.getDisplayName().copy().withStyle(ChatFormatting.BOLD));
             } else {
-                CollectorBlockEntity.CollectorType type = blockEntity.getCollectorType();
-                String fluidName = type == CollectorBlockEntity.CollectorType.HYDRO ? "Water" : "Lava";
-                tooltip.add(Component.literal(fluidName + " Tank")
-                        .withStyle(type == CollectorBlockEntity.CollectorType.HYDRO ?
-                                ChatFormatting.AQUA : ChatFormatting.RED, ChatFormatting.BOLD));
+                Fluid targetFluid = blockEntity.getCurrentTargetFluid();
+                if (targetFluid != null && targetFluid != Fluids.EMPTY) {
+                    FluidStack targetStack = new FluidStack(targetFluid, 1000);
+                    tooltip.add(Component.literal(targetStack.getDisplayName().getString() + " Tank")
+                            .withStyle(ChatFormatting.BOLD));
+                } else {
+                    tooltip.add(Component.literal("Fluid Tank")
+                            .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+                }
             }
 
             NumberFormat formatter = NumberFormat.getInstance(Locale.US);
@@ -176,18 +182,27 @@ public class CollectorScreen extends AbstractContainerScreen<CollectorMenu> {
                                 String.format("%.1f", progress * 100))
                         .withStyle(ChatFormatting.GREEN));
 
-                CollectorBlockEntity.CollectorType type = blockEntity.getCollectorType();
-                String fluidName = type == CollectorBlockEntity.CollectorType.HYDRO ? "water" : "lava";
-                tooltip.add(Component.translatable("tooltip.gentech.collecting_fluid", fluidName)
-                        .withStyle(ChatFormatting.AQUA));
+                Fluid targetFluid = blockEntity.getCurrentTargetFluid();
+                if (targetFluid != null && targetFluid != Fluids.EMPTY) {
+                    FluidStack targetStack = new FluidStack(targetFluid, 1000);
+                    tooltip.add(Component.translatable("tooltip.gentech.collecting_fluid",
+                                    targetStack.getDisplayName().getString())
+                            .withStyle(ChatFormatting.AQUA));
+                }
             } else if (!hasValidSources) {
                 tooltip.add(Component.translatable("tooltip.gentech.status.no_sources")
                         .withStyle(ChatFormatting.RED));
 
-                CollectorBlockEntity.CollectorType type = blockEntity.getCollectorType();
-                String fluidName = type == CollectorBlockEntity.CollectorType.HYDRO ? "water" : "lava";
-                tooltip.add(Component.translatable("tooltip.gentech.requires_sources", fluidName)
-                        .withStyle(ChatFormatting.DARK_RED));
+                Fluid targetFluid = blockEntity.getCurrentTargetFluid();
+                if (targetFluid != null && targetFluid != Fluids.EMPTY) {
+                    FluidStack targetStack = new FluidStack(targetFluid, 1000);
+                    tooltip.add(Component.translatable("tooltip.gentech.requires_sources",
+                                    targetStack.getDisplayName().getString())
+                            .withStyle(ChatFormatting.DARK_RED));
+                } else {
+                    tooltip.add(Component.translatable("tooltip.gentech.requires_fluid_sources")
+                            .withStyle(ChatFormatting.DARK_RED));
+                }
             } else {
                 tooltip.add(Component.translatable("tooltip.gentech.status.tank_full")
                         .withStyle(ChatFormatting.GOLD));
