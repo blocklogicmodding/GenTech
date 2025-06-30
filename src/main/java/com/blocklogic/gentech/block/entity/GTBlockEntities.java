@@ -29,6 +29,15 @@ public class GTBlockEntities {
                     GTBlocks.MAGMA_COLLECTOR.get()
             ).build(null));
 
+    public static final Supplier<BlockEntityType<TankBlockEntity>> TANK_BLOCK_ENTITY =
+            BLOCK_ENTITIES.register("tank_block_entity", () -> BlockEntityType.Builder.of(
+                    TankBlockEntity::new,
+                    GTBlocks.COPPER_TANK.get(),
+                    GTBlocks.IRON_TANK.get(),
+                    GTBlocks.DIAMOND_TANK.get(),
+                    GTBlocks.NETHERITE_TANK.get()
+            ).build(null));
+
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);
     }

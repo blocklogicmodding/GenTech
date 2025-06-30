@@ -9,6 +9,7 @@ import com.blocklogic.gentech.block.entity.CollectorBlockEntity;
 import com.blocklogic.gentech.block.entity.GTBlockEntities;
 import com.blocklogic.gentech.block.entity.GeneratorBlockEntity;
 import com.blocklogic.gentech.client.renderer.GeneratorBlockEntityRenderer;
+import com.blocklogic.gentech.client.renderer.TankBlockEntityRenderer;
 import com.blocklogic.gentech.command.GTCommands;
 import com.blocklogic.gentech.component.GTDataComponents;
 import com.blocklogic.gentech.config.CustomGeneratorRecipeConfig;
@@ -122,6 +123,11 @@ public class GenTech {
             event.registerBlockEntityRenderer(
                     GTBlockEntities.GENERATOR_BLOCK_ENTITY.get(),
                     GeneratorBlockEntityRenderer::new
+            );
+
+            event.registerBlockEntityRenderer(
+                    GTBlockEntities.TANK_BLOCK_ENTITY.get(),
+                    TankBlockEntityRenderer::new
             );
         }
 

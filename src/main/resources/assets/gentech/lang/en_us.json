@@ -83,6 +83,15 @@
   "tooltip.gentech.status.tank_full": "Tank Full",
   "tooltip.gentech.collector_export": "Export: Top/Bottom Only",
 
+  "tooltip.gentech.tank.tier.copper": "Copper Storage Tank",
+  "tooltip.gentech.tank.tier.iron": "Iron Storage Tank",
+  "tooltip.gentech.tank.tier.diamond": "Diamond Storage Tank",
+  "tooltip.gentech.tank.tier.netherite": "Netherite Storage Tank",
+  "tooltip.gentech.tank.capacities": "Capacity: %s mB",
+  "tooltip.gentech.tank.any_fluid": "Stores any fluid type",
+  "tooltip.gentech.tank.all_sides": "Input/Output: All sides",
+  "tooltip.gentech.tank.bucket_usage": "Right-click with buckets to fill/empty",
+
   "_comment_fluid_persistence": "Fluid Persistence Tooltips - Used in generator block classes",
   "tooltip.gentech.stored_fluids": "Stored Fluids:",
   "tooltip.gentech.stored_water": "Water: %s mB",
