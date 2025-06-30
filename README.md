@@ -1,7 +1,7 @@
 
 # GenTech
 
-![GenTech](https://deonjonker.com/blm/gentech/gt_banner.png)
+![GenTech](https://deonjonker.com/blm/gentech/gt_banner2.png)
 
 A Minecraft mod that adds tiered block generators powered by fluid combinations. Generate blocks by placing generators above them and supplying the required fluids.
 
