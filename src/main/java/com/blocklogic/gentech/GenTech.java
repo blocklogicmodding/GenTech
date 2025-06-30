@@ -106,6 +106,11 @@ public class GenTech {
                 ItemBlockRenderTypes.setRenderLayer(GTBlocks.IRON_GENERATOR.get(), RenderType.cutout());
                 ItemBlockRenderTypes.setRenderLayer(GTBlocks.DIAMOND_GENERATOR.get(), RenderType.cutout());
                 ItemBlockRenderTypes.setRenderLayer(GTBlocks.NETHERITE_GENERATOR.get(), RenderType.cutout());
+
+                ItemBlockRenderTypes.setRenderLayer(GTBlocks.COPPER_TANK.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(GTBlocks.IRON_TANK.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(GTBlocks.DIAMOND_TANK.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(GTBlocks.NETHERITE_TANK.get(), RenderType.cutout());
             });
         }
 

@@ -11,6 +11,8 @@ import net.minecraft.world.level.block.Block;
 public class GTTags {
     public static class Blocks {
         public static final TagKey<Block> GENTECH_GENERATORS = createTag("gentech_generators");
+        public static final TagKey<Block> GENTECH_TANKS = createTag("gentech_tanks");
+        public static final TagKey<Block> GENTECH_COLLECTORS = createTag("gentech_collectors");
 
         private static TagKey<Block> createTag (String name) {
             return BlockTags.create(ResourceLocation.fromNamespaceAndPath(GenTech.MODID, name));

@@ -3,6 +3,12 @@
     "gentech:copper_generator",
     "gentech:iron_generator",
     "gentech:diamond_generator",
-    "gentech:netherite_generator"
+    "gentech:netherite_generator",
+    "gentech:copper_tank",
+    "gentech:iron_tank",
+    "gentech:diamond_tank",
+    "gentech:netherite_tank",
+    "gentech:hydro_collector",
+    "gentech:magma_collector"
   ]
 }

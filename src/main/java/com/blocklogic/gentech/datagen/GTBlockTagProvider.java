@@ -23,12 +23,28 @@ public class GTBlockTagProvider extends BlockTagsProvider {
                 .add(GTBlocks.COPPER_GENERATOR.get())
                 .add(GTBlocks.IRON_GENERATOR.get())
                 .add(GTBlocks.DIAMOND_GENERATOR.get())
-                .add(GTBlocks.NETHERITE_GENERATOR.get());
+                .add(GTBlocks.NETHERITE_GENERATOR.get())
+                .add(GTBlocks.COPPER_TANK.get())
+                .add(GTBlocks.IRON_TANK.get())
+                .add(GTBlocks.DIAMOND_TANK.get())
+                .add(GTBlocks.NETHERITE_TANK.get())
+                .add(GTBlocks.HYDRO_COLLECTOR.get())
+                .add(GTBlocks.MAGMA_COLLECTOR.get());
 
         tag(GTTags.Blocks.GENTECH_GENERATORS)
                 .add(GTBlocks.COPPER_GENERATOR.get())
                 .add(GTBlocks.IRON_GENERATOR.get())
                 .add(GTBlocks.DIAMOND_GENERATOR.get())
                 .add(GTBlocks.NETHERITE_GENERATOR.get());
+
+        tag(GTTags.Blocks.GENTECH_TANKS)
+                .add(GTBlocks.COPPER_TANK.get())
+                .add(GTBlocks.IRON_TANK.get())
+                .add(GTBlocks.DIAMOND_TANK.get())
+                .add(GTBlocks.NETHERITE_TANK.get());
+
+        tag(GTTags.Blocks.GENTECH_COLLECTORS)
+                .add(GTBlocks.HYDRO_COLLECTOR.get())
+                .add(GTBlocks.MAGMA_COLLECTOR.get());
     }
 }

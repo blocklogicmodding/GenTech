@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:copper_block"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "T": {
+      "item": "gentech:copper_tank"
+    }
+  },
+  "pattern": [
+    "III",
+    "TCT",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "gentech:iron_tank"
+  }
+}

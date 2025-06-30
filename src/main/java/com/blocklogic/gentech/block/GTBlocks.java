@@ -1,10 +1,7 @@
 package com.blocklogic.gentech.block;
 
 import com.blocklogic.gentech.GenTech;
-import com.blocklogic.gentech.block.custom.CopperGeneratorBlock;
-import com.blocklogic.gentech.block.custom.DiamondGeneratorBlock;
-import com.blocklogic.gentech.block.custom.IronGeneratorBlock;
-import com.blocklogic.gentech.block.custom.NetheriteGeneratorBlock;
+import com.blocklogic.gentech.block.custom.*;
 import com.blocklogic.gentech.item.GTItems;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -46,6 +43,55 @@ public class GTBlocks {
 
     public static final DeferredBlock<Block> NETHERITE_GENERATOR = registerBlock("netherite_generator",
             () -> new NetheriteGeneratorBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.STONE)
+                    .noOcclusion()
+            ));
+
+    //Tanks
+    public static final DeferredBlock<Block> COPPER_TANK = registerBlock("copper_tank",
+            () -> new CopperTankBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.STONE)
+                    .noOcclusion()
+            ));
+
+    public static final DeferredBlock<Block> IRON_TANK = registerBlock("iron_tank",
+            () -> new IronTankBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.STONE)
+                    .noOcclusion()
+            ));
+
+    public static final DeferredBlock<Block> DIAMOND_TANK = registerBlock("diamond_tank",
+            () -> new DiamondTankBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.STONE)
+                    .noOcclusion()
+            ));
+
+    public static final DeferredBlock<Block> NETHERITE_TANK = registerBlock("netherite_tank",
+            () -> new NetheriteTankBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.STONE)
+                    .noOcclusion()
+            ));
+
+    public static final DeferredBlock<Block> HYDRO_COLLECTOR = registerBlock("hydro_collector",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .strength(3.0F)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.STONE)
+                    .noOcclusion()
+            ));
+
+    public static final DeferredBlock<Block> MAGMA_COLLECTOR = registerBlock("magma_collector",
+            () -> new Block(BlockBehaviour.Properties.of()
                     .strength(3.0F)
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.STONE)

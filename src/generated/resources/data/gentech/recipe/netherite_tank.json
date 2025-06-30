@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "minecraft:diamond_block"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "T": {
+      "item": "gentech:diamond_tank"
+    }
+  },
+  "pattern": [
+    "NNN",
+    "DTD",
+    "NNN"
+  ],
+  "result": {
+    "count": 1,
+    "id": "gentech:netherite_tank"
+  }
+}

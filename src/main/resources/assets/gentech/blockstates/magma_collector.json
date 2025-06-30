@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "gentech:block/magma_collector"
+    }
+  }
+}

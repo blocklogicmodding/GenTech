@@ -60,6 +60,68 @@ public class GTRecipeProvider extends RecipeProvider implements IConditionBuilde
                 .unlockedBy("has_diamond_generator", has(GTBlocks.DIAMOND_GENERATOR.get()))
                 .save(recipeOutput);
 
+        // Tanks
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, GTBlocks.COPPER_TANK.get())
+                .pattern("CCC")
+                .pattern("CGC")
+                .pattern("CCC")
+                .define('C', Items.COPPER_BLOCK)
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .unlockedBy("has_copper_blocks", has(Items.COPPER_BLOCK))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, GTBlocks.IRON_TANK.get())
+                .pattern("III")
+                .pattern("TCT")
+                .pattern("III")
+                .define('I', Items.IRON_BLOCK)
+                .define('T', GTBlocks.COPPER_TANK.get())
+                .define('C', Items.COPPER_BLOCK)
+                .unlockedBy("has_copper_tank", has(GTBlocks.COPPER_TANK.get()))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, GTBlocks.DIAMOND_TANK.get())
+                .pattern("DDD")
+                .pattern("ITI")
+                .pattern("DDD")
+                .define('D', Items.DIAMOND_BLOCK)
+                .define('I', Items.IRON_BLOCK)
+                .define('T', GTBlocks.IRON_TANK.get())
+                .unlockedBy("has_iron_tank", has(GTBlocks.IRON_TANK.get()))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, GTBlocks.NETHERITE_TANK.get())
+                .pattern("NNN")
+                .pattern("DTD")
+                .pattern("NNN")
+                .define('N', Items.NETHERITE_INGOT)
+                .define('D', Items.DIAMOND_BLOCK)
+                .define('T', GTBlocks.DIAMOND_TANK.get())
+                .unlockedBy("has_diamond_tank", has(GTBlocks.DIAMOND_TANK.get()))
+                .save(recipeOutput);
+
+        // Hydro Collector
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, GTBlocks.HYDRO_COLLECTOR.get())
+                .pattern("IGI")
+                .pattern("GBG")
+                .pattern("IGI")
+                .define('I', Items.IRON_BLOCK)
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .define('B', Items.BUCKET)
+                .unlockedBy("has_iron_blocks", has(Items.IRON_BLOCK))
+                .save(recipeOutput);
+
+        // Magma Collector
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, GTBlocks.MAGMA_COLLECTOR.get())
+                .pattern("INI")
+                .pattern("NLN")
+                .pattern("INI")
+                .define('I', Items.IRON_BLOCK)
+                .define('N', Items.NETHERRACK)
+                .define('L', Items.LAVA_BUCKET)
+                .unlockedBy("has_iron_blocks", has(Items.IRON_BLOCK))
+                .save(recipeOutput);
+
         // Generator Tier Upgrade Items (same recipes as the blocks they upgrade to)
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, GTItems.COPPER_TO_IRON_GENERATOR_UPGRADE.get())
                 .pattern("III")
