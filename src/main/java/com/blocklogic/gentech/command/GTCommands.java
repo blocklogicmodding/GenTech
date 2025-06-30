@@ -26,7 +26,7 @@ public class GTCommands {
 
         dispatcher.register(
                 Commands.literal("gentech")
-                        .requires(source -> source.hasPermission(2)) // OP level 2 required
+                        .requires(source -> source.hasPermission(2))
                         .then(Commands.literal("reload")
                                 .then(Commands.literal("config")
                                         .executes(GTCommands::reloadMainConfig))

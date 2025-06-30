@@ -98,7 +98,7 @@ public class CollectorScreen extends AbstractContainerScreen<CollectorMenu> {
 
         guiGraphics.setColor(red, green, blue, alpha);
         guiGraphics.blit(targetX, targetY, 0, FLUID_BUFFER_WIDTH, fillHeight, sprite);
-        guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f); // Reset color
+        guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     private void renderProgressBar(GuiGraphics guiGraphics, int guiX, int guiY) {

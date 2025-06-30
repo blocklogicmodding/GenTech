@@ -6,6 +6,7 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.fml.loading.FMLPaths;
@@ -33,7 +34,6 @@ public class CustomGeneratorRecipeConfig {
     private static Map<String, CustomGeneratorRecipe> loadedRecipes = new LinkedHashMap<>();
     private static Map<String, List<CustomGeneratorRecipe>> recipesByBlock = new HashMap<>();
 
-    // Error tracking - only used when errors occur
     private static final AtomicInteger errorCounter = new AtomicInteger(0);
     private static Path currentErrorFile = null;
     private static final List<String> currentSessionErrors = new ArrayList<>();
@@ -55,7 +55,6 @@ public class CustomGeneratorRecipeConfig {
     }
 
     public static void loadRecipes() {
-        // Reset error tracking for this session
         currentSessionErrors.clear();
         errorCounter.set(0);
         currentErrorFile = null;
@@ -84,7 +83,6 @@ public class CustomGeneratorRecipeConfig {
             logError("Critical error loading recipes file", e.getMessage(), 0);
         }
 
-        // Only show error summary and create log if there were actual errors
         if (!currentSessionErrors.isEmpty()) {
             LOGGER.warn("Recipe loading completed with {} errors. Check error log: {}",
                     currentSessionErrors.size(), currentErrorFile);
@@ -286,7 +284,7 @@ public class CustomGeneratorRecipeConfig {
             ResourceLocation location = ResourceLocation.parse(blockId);
             Block block = BuiltInRegistries.BLOCK.get(location);
 
-            if (block == null || block == net.minecraft.world.level.block.Blocks.AIR) {
+            if (block == null || block == Blocks.AIR) {
                 return null;
             }
 
@@ -305,7 +303,7 @@ public class CustomGeneratorRecipeConfig {
             ResourceLocation location = ResourceLocation.parse(fluidId);
             Fluid fluid = BuiltInRegistries.FLUID.get(location);
 
-            if (fluid == null || fluid == net.minecraft.world.level.material.Fluids.EMPTY) {
+            if (fluid == null || fluid == Fluids.EMPTY) {
                 return null;
             }
 
