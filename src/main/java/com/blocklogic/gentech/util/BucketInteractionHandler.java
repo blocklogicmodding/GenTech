@@ -4,11 +4,13 @@ import com.blocklogic.gentech.block.custom.CopperGeneratorBlock;
 import com.blocklogic.gentech.block.entity.GeneratorBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -150,6 +152,27 @@ public class BucketInteractionHandler {
         } else if (fluid == Fluids.LAVA) {
             return new ItemStack(Items.LAVA_BUCKET);
         }
+
+        if (fluid == Fluids.EMPTY) {
+            return ItemStack.EMPTY;
+        }
+
+        try {
+            FluidStack fluidStack = new FluidStack(fluid, BUCKET_CAPACITY);
+            ItemStack bucketStack = fluid.getFluidType().getBucket(fluidStack);
+            if (!bucketStack.isEmpty() && bucketStack.getItem() != Items.BUCKET) {
+                return bucketStack.copy();
+            }
+        } catch (Exception e) {
+
+        }
+
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (item instanceof BucketItem bucketItem && bucketItem.content == fluid) {
+                return new ItemStack(item);
+            }
+        }
+
         return ItemStack.EMPTY;
     }
 }
