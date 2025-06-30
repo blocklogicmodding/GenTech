@@ -22,6 +22,13 @@ public class GTBlockEntities {
                             GTBlocks.NETHERITE_GENERATOR.get()
                     ).build(null));
 
+    public static final Supplier<BlockEntityType<CollectorBlockEntity>> COLLECTOR_BLOCK_ENTITY =
+            BLOCK_ENTITIES.register("collector_block_entity", () -> BlockEntityType.Builder.of(
+                    CollectorBlockEntity::new,
+                    GTBlocks.HYDRO_COLLECTOR.get(),
+                    GTBlocks.MAGMA_COLLECTOR.get()
+            ).build(null));
+
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);
     }

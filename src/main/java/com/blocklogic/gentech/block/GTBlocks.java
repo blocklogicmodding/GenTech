@@ -83,7 +83,7 @@ public class GTBlocks {
             ));
 
     public static final DeferredBlock<Block> HYDRO_COLLECTOR = registerBlock("hydro_collector",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new HydroCollectorBlock(BlockBehaviour.Properties.of()
                     .strength(3.0F)
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.STONE)
@@ -91,7 +91,7 @@ public class GTBlocks {
             ));
 
     public static final DeferredBlock<Block> MAGMA_COLLECTOR = registerBlock("magma_collector",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new MagmaCollectorBlock(BlockBehaviour.Properties.of()
                     .strength(3.0F)
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.STONE)

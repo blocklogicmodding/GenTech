@@ -76,6 +76,13 @@
   "tooltip.gentech.generator.hard_blocks": "• Hard Blocks: %ss",
   "tooltip.gentech.generator.usage": "Place above any valid block to generate it",
 
+  "tooltip.gentech.collection_progress": "Collection Progress",
+  "tooltip.gentech.collecting_fluid": "Collecting %s",
+  "tooltip.gentech.status.no_sources": "No Valid Sources",
+  "tooltip.gentech.requires_sources": "Requires 2+ %s source blocks adjacent",
+  "tooltip.gentech.status.tank_full": "Tank Full",
+  "tooltip.gentech.collector_export": "Export: Top/Bottom Only",
+
   "_comment_fluid_persistence": "Fluid Persistence Tooltips - Used in generator block classes",
   "tooltip.gentech.stored_fluids": "Stored Fluids:",
   "tooltip.gentech.stored_water": "Water: %s mB",

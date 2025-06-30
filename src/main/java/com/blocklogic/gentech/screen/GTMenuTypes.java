@@ -1,6 +1,7 @@
 package com.blocklogic.gentech.screen;
 
 import com.blocklogic.gentech.GenTech;
+import com.blocklogic.gentech.screen.custom.CollectorMenu;
 import com.blocklogic.gentech.screen.custom.GeneratorMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -17,6 +18,9 @@ public class GTMenuTypes {
 
     public static final DeferredHolder<MenuType<?>, MenuType<GeneratorMenu>> GENERATOR_MENU =
             registerMenuType("generator_menu", GeneratorMenu::new);
+
+    public static final DeferredHolder<MenuType<?>, MenuType<CollectorMenu>> COLLECTOR_MENU =
+            registerMenuType("collector_menu", CollectorMenu::new);
 
     private static <T extends AbstractContainerMenu> DeferredHolder<MenuType<?>, MenuType<T>> registerMenuType(String name, IContainerFactory<T> factory) {
         return MENUS.register(name, () -> IMenuTypeExtension.create(factory));

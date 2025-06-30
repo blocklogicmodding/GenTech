@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "collecting=false": {
       "model": "gentech:block/magma_collector"
+    },
+    "collecting=true": {
+      "model": "gentech:block/magma_collector_collecting"
     }
   }
 }

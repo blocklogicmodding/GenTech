@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "north": "gentech:block/magma_collector_side",
+    "south": "gentech:block/magma_collector_side",
+    "east": "gentech:block/magma_collector_side",
+    "west": "gentech:block/magma_collector_side",
+    "up": "gentech:block/magma_collector_top",
+    "down": "gentech:block/collector_bottom",
+    "particle": "gentech:block/magma_collector_side"
+  }
+}

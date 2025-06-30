@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "north": "gentech:block/hydro_collector_side",
+    "south": "gentech:block/hydro_collector_side",
+    "east": "gentech:block/hydro_collector_side",
+    "west": "gentech:block/hydro_collector_side",
+    "up": "gentech:block/hydro_collector_top",
+    "down": "gentech:block/collector_bottom",
+    "particle": "gentech:block/hydro_collector_side"
+  }
+}

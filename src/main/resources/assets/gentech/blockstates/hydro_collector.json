@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "collecting=false": {
       "model": "gentech:block/hydro_collector"
+    },
+    "collecting=true": {
+      "model": "gentech:block/hydro_collector_collecting"
     }
   }
 }

@@ -5,6 +5,7 @@ import com.blocklogic.gentech.block.custom.CopperGeneratorBlock;
 import com.blocklogic.gentech.block.custom.DiamondGeneratorBlock;
 import com.blocklogic.gentech.block.custom.IronGeneratorBlock;
 import com.blocklogic.gentech.block.custom.NetheriteGeneratorBlock;
+import com.blocklogic.gentech.block.entity.CollectorBlockEntity;
 import com.blocklogic.gentech.block.entity.GTBlockEntities;
 import com.blocklogic.gentech.block.entity.GeneratorBlockEntity;
 import com.blocklogic.gentech.client.renderer.GeneratorBlockEntityRenderer;
@@ -14,6 +15,7 @@ import com.blocklogic.gentech.config.CustomGeneratorRecipeConfig;
 import com.blocklogic.gentech.item.GTCreativeTab;
 import com.blocklogic.gentech.item.GTItems;
 import com.blocklogic.gentech.screen.GTMenuTypes;
+import com.blocklogic.gentech.screen.custom.CollectorScreen;
 import com.blocklogic.gentech.screen.custom.GeneratorScreen;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -77,6 +79,7 @@ public class GenTech {
         modEventBus.addListener(this::addCreative);
 
         modEventBus.addListener(GeneratorBlockEntity::registerCapabilities);
+        modEventBus.addListener(CollectorBlockEntity::registerCapabilities);
 
         Config.register(modContainer);
         modEventBus.register(Config.class);
@@ -125,6 +128,7 @@ public class GenTech {
         @SubscribeEvent
         public static void registerScreens(RegisterMenuScreensEvent event) {
             event.register(GTMenuTypes.GENERATOR_MENU.get(), GeneratorScreen::new);
+            event.register(GTMenuTypes.COLLECTOR_MENU.get(), CollectorScreen::new);
         }
     }
 }
