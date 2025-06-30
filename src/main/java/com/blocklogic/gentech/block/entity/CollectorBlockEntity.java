@@ -36,9 +36,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
 
-    private static final int FLUID_CAPACITY = 5000; // 50% smaller than copper generator
-    private static final int BASE_COLLECTION_TIME = 600; // 30 seconds
-    private static final int FLUID_PER_COLLECTION = 1000; // 1 bucket
+    private static final int FLUID_CAPACITY = 10000;
+    private static final int BASE_COLLECTION_TIME = 600;
+    private static final int FLUID_PER_COLLECTION = 1000;
     private static final int UPGRADE_SLOT = 0;
 
     private int progress = 0;
@@ -73,7 +73,7 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
             }
         };
 
-        this.itemHandler = new ItemStackHandler(1) { // Single upgrade slot
+        this.itemHandler = new ItemStackHandler(1) {
             @Override
             protected void onContentsChanged(int slot) {
                 setChanged();
@@ -87,7 +87,7 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
 
             @Override
             public int getSlotLimit(int slot) {
-                return 1; // Upgrade slot can only hold 1 item
+                return 1;
             }
         };
     }
@@ -97,7 +97,6 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
             return;
         }
 
-        // Update fluid amount for client sync
         int currentFluid = blockEntity.fluidTank.getFluidAmount();
         if (currentFluid != blockEntity.lastFluidAmount) {
             blockEntity.lastFluidAmount = currentFluid;
@@ -105,35 +104,31 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
             blockEntity.setChanged();
         }
 
-        // Validate sources periodically
         if (level.getGameTime() % VALIDATION_INTERVAL == 0 || blockEntity.lastValidatedTick == -1) {
             blockEntity.validateSources();
             blockEntity.lastValidatedTick = (int) level.getGameTime();
         }
 
-        // Can't collect if no valid sources or tank is full
         if (!blockEntity.hasValidSources || !blockEntity.canCollect()) {
             if (blockEntity.progress > 0) {
                 blockEntity.progress = 0;
                 blockEntity.setChanged();
             }
-            blockEntity.updateBlockState(); // UPDATE BLOCKSTATE
+            blockEntity.updateBlockState();
             return;
         }
 
-        // Update collection speed based on upgrades
         if (blockEntity.maxProgress != blockEntity.getActualCollectionTime()) {
             blockEntity.maxProgress = blockEntity.getActualCollectionTime();
         }
 
-        // Progress collection
         blockEntity.progress++;
 
         if (blockEntity.progress >= blockEntity.maxProgress) {
             blockEntity.completeCollection();
         }
 
-        blockEntity.updateBlockState(); // UPDATE BLOCKSTATE
+        blockEntity.updateBlockState();
         blockEntity.setChanged();
     }
 
@@ -143,7 +138,6 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
         int sourceCount = 0;
         Fluid targetFluid = getTargetFluid();
 
-        // Check all horizontal sides (N/S/E/W only)
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             BlockPos adjacentPos = worldPosition.relative(direction);
             BlockState adjacentState = level.getBlockState(adjacentPos);
@@ -205,7 +199,7 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
         } else if (blockState.getBlock() instanceof MagmaCollectorBlock) {
             return CollectorType.MAGMA;
         }
-        return CollectorType.HYDRO; // Default fallback
+        return CollectorType.HYDRO;
     }
 
     private Fluid getTargetFluid() {
@@ -244,17 +238,15 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
         return type;
     }
 
-    // Fluid capability - TOP and BOTTOM only!
     public @Nullable IFluidHandler getFluidHandler(Direction side) {
         if (side == Direction.UP || side == Direction.DOWN) {
             return new OutputOnlyFluidHandler(fluidTank);
         }
-        return null; // No access from sides!
+        return null;
     }
 
-    // Item capability - null for now (no automation)
     public @Nullable IItemHandler getItemHandler(Direction side) {
-        return null; // No item automation
+        return null;
     }
 
     private static class OutputOnlyFluidHandler implements IFluidHandler {
@@ -281,12 +273,12 @@ public class CollectorBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public boolean isFluidValid(int tank, FluidStack stack) {
-            return false; // No input allowed
+            return false;
         }
 
         @Override
         public int fill(FluidStack resource, FluidAction action) {
-            return 0; // No input allowed
+            return 0;
         }
 
         @Override

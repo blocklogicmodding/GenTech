@@ -18,13 +18,11 @@ public class CollectorMenu extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final Level level;
 
-    // Client-side data cache
     private int lastFluidAmount = 0;
     private int lastFluidCapacity = 0;
     private float lastProgressLevel = 0.0f;
     private boolean lastHasValidSources = false;
 
-    // GUI coordinates
     private static final int UPGRADE_SLOT_X = 152;
     private static final int UPGRADE_SLOT_Y = 17;
     private static final int PLAYER_INVENTORY_X = 8;
@@ -42,7 +40,7 @@ public class CollectorMenu extends AbstractContainerMenu {
         this.access = ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos());
         this.level = playerInventory.player.level();
 
-        checkContainerSize(playerInventory, 1); // Only 1 upgrade slot
+        checkContainerSize(playerInventory, 1);
 
         addUpgradeSlot();
         addPlayerInventory(playerInventory);
@@ -51,7 +49,6 @@ public class CollectorMenu extends AbstractContainerMenu {
     }
 
     private void addDataSlots() {
-        // Fluid amount
         this.addDataSlot(new DataSlot() {
             @Override
             public int get() {
@@ -64,7 +61,6 @@ public class CollectorMenu extends AbstractContainerMenu {
             }
         });
 
-        // Fluid capacity
         this.addDataSlot(new DataSlot() {
             @Override
             public int get() {
@@ -77,7 +73,6 @@ public class CollectorMenu extends AbstractContainerMenu {
             }
         });
 
-        // Progress level (multiply by 1000 for precision)
         this.addDataSlot(new DataSlot() {
             @Override
             public int get() {
@@ -90,7 +85,6 @@ public class CollectorMenu extends AbstractContainerMenu {
             }
         });
 
-        // Has valid sources (boolean as int)
         this.addDataSlot(new DataSlot() {
             @Override
             public int get() {
@@ -134,7 +128,6 @@ public class CollectorMenu extends AbstractContainerMenu {
         }
     }
 
-    // Client-side data getters
     public int getFluidAmount() {
         return level.isClientSide ? lastFluidAmount : blockEntity.getFluidAmount();
     }
@@ -170,24 +163,21 @@ public class CollectorMenu extends AbstractContainerMenu {
             ItemStack stackInSlot = slot.getItem();
             itemstack = stackInSlot.copy();
 
-            if (index == 0) { // Upgrade slot
-                // Moving from upgrade slot to player inventory
+            if (index == 0) {
                 if (!this.moveItemStackTo(stackInSlot, 1, this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
             } else {
-                // Moving from player inventory to upgrade slot
                 if (this.slots.get(0).mayPlace(stackInSlot)) {
                     if (!this.moveItemStackTo(stackInSlot, 0, 1, false)) {
                         return ItemStack.EMPTY;
                     }
                 } else {
-                    // Move within player inventory
-                    if (index < 28) { // Player inventory to hotbar
+                    if (index < 28) {
                         if (!this.moveItemStackTo(stackInSlot, 28, 37, false)) {
                             return ItemStack.EMPTY;
                         }
-                    } else { // Hotbar to player inventory
+                    } else {
                         if (!this.moveItemStackTo(stackInSlot, 1, 28, false)) {
                             return ItemStack.EMPTY;
                         }

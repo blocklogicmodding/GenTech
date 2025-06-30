@@ -22,7 +22,6 @@ public class CollectorScreen extends AbstractContainerScreen<CollectorMenu> {
 
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(GenTech.MODID, "textures/gui/collector_gui.png");
 
-    // GUI Layout coordinates (from your specifications)
     private static final int TEXTURE_WIDTH = 176;
     private static final int TEXTURE_HEIGHT = 170;
 
@@ -60,15 +59,12 @@ public class CollectorScreen extends AbstractContainerScreen<CollectorMenu> {
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
 
-        // Render main GUI texture
         guiGraphics.blit(TEXTURE, x, y, 0, 0, this.imageWidth, this.imageHeight);
 
-        // Render fluid buffer
         CollectorBlockEntity blockEntity = this.menu.getBlockEntity();
         FluidStack fluidStack = blockEntity.getFluidTank().getFluid();
         renderFluidBuffer(guiGraphics, x, y, fluidStack, this.menu.getFluidLevel());
 
-        // Render progress bar
         renderProgressBar(guiGraphics, x, y);
     }
 
@@ -86,12 +82,10 @@ public class CollectorScreen extends AbstractContainerScreen<CollectorMenu> {
 
         TextureAtlasSprite sprite = minecraft.getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(fluidTexture);
 
-        // Calculate fill height (FILL FROM BOTTOM)
         int fillHeight = (int) (FLUID_BUFFER_HEIGHT * fillLevel);
         int targetX = guiX + FLUID_BUFFER_X;
         int targetY = guiY + FLUID_BUFFER_Y + (FLUID_BUFFER_HEIGHT - fillHeight);
 
-        // Get fluid color tinting
         int fluidColor = fluidExtensions.getTintColor(fluidStack);
         float red = ((fluidColor >> 16) & 0xFF) / 255.0f;
         float green = ((fluidColor >> 8) & 0xFF) / 255.0f;
@@ -100,7 +94,6 @@ public class CollectorScreen extends AbstractContainerScreen<CollectorMenu> {
 
         if (alpha == 0) alpha = 1.0f;
 
-        // Apply color and render
         guiGraphics.setColor(red, green, blue, alpha);
         guiGraphics.blit(targetX, targetY, 0, FLUID_BUFFER_WIDTH, fillHeight, sprite);
         guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f); // Reset color
@@ -110,15 +103,12 @@ public class CollectorScreen extends AbstractContainerScreen<CollectorMenu> {
         float progress = this.menu.getProgressLevel();
 
         if (progress > 0) {
-            // Calculate fill height (FILL FROM BOTTOM)
             int fillHeight = (int) (PROGRESS_BAR_HEIGHT * progress);
             int targetX = guiX + PROGRESS_BAR_X;
             int targetY = guiY + PROGRESS_BAR_Y + (PROGRESS_BAR_HEIGHT - fillHeight);
 
-            // Calculate source Y for blit (from bottom of source texture)
             int sourceY = PROGRESS_FILL_SOURCE_Y + (PROGRESS_BAR_HEIGHT - fillHeight);
 
-            // Render progress fill
             guiGraphics.blit(TEXTURE,
                     targetX, targetY,
                     PROGRESS_FILL_SOURCE_X, sourceY,
@@ -136,7 +126,6 @@ public class CollectorScreen extends AbstractContainerScreen<CollectorMenu> {
 
         CollectorBlockEntity blockEntity = this.menu.getBlockEntity();
 
-        // Fluid buffer tooltip
         if (x >= guiX + FLUID_BUFFER_X && x <= guiX + FLUID_BUFFER_X + FLUID_BUFFER_WIDTH &&
                 y >= guiY + FLUID_BUFFER_Y && y <= guiY + FLUID_BUFFER_Y + FLUID_BUFFER_HEIGHT) {
 
@@ -172,7 +161,6 @@ public class CollectorScreen extends AbstractContainerScreen<CollectorMenu> {
             guiGraphics.renderComponentTooltip(this.font, tooltip, x, y);
         }
 
-        // Progress bar tooltip
         if (x >= guiX + PROGRESS_BAR_X && x <= guiX + PROGRESS_BAR_X + PROGRESS_BAR_WIDTH &&
                 y >= guiY + PROGRESS_BAR_Y && y <= guiY + PROGRESS_BAR_Y + PROGRESS_BAR_HEIGHT) {
 
