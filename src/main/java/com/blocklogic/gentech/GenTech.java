@@ -8,6 +8,7 @@ import com.blocklogic.gentech.block.custom.NetheriteGeneratorBlock;
 import com.blocklogic.gentech.block.entity.CollectorBlockEntity;
 import com.blocklogic.gentech.block.entity.GTBlockEntities;
 import com.blocklogic.gentech.block.entity.GeneratorBlockEntity;
+import com.blocklogic.gentech.block.entity.TankBlockEntity;
 import com.blocklogic.gentech.client.renderer.GeneratorBlockEntityRenderer;
 import com.blocklogic.gentech.client.renderer.TankBlockEntityRenderer;
 import com.blocklogic.gentech.command.GTCommands;
@@ -81,6 +82,7 @@ public class GenTech {
 
         modEventBus.addListener(GeneratorBlockEntity::registerCapabilities);
         modEventBus.addListener(CollectorBlockEntity::registerCapabilities);
+        modEventBus.addListener(TankBlockEntity::registerCapabilities);
 
         Config.register(modContainer);
         modEventBus.register(Config.class);

@@ -2,19 +2,19 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "minecraft:bucket"
-    },
     "D": {
       "item": "gentech:diamond_generator"
     },
     "N": {
       "item": "minecraft:netherite_ingot"
+    },
+    "S": {
+      "item": "minecraft:smooth_stone"
     }
   },
   "pattern": [
     "NNN",
-    "BDB",
+    "SDS",
     "NNN"
   ],
   "result": {

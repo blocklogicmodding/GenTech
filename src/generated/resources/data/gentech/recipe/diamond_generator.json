@@ -2,19 +2,19 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "minecraft:bucket"
-    },
     "D": {
-      "item": "minecraft:diamond_block"
+      "item": "minecraft:diamond"
     },
     "I": {
       "item": "gentech:iron_generator"
+    },
+    "S": {
+      "item": "minecraft:smooth_stone"
     }
   },
   "pattern": [
     "DDD",
-    "BIB",
+    "SIS",
     "DDD"
   ],
   "result": {

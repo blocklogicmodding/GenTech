@@ -54,7 +54,7 @@ public class TankBlockEntityRenderer implements BlockEntityRenderer<TankBlockEnt
         float minZ = 3.0f / 16.0f;
         float maxZ = 13.0f / 16.0f;
         float minY = 1.0f / 16.0f;
-        float maxY = minY + (13.0f / 16.0f) * fillLevel;
+        float maxY = minY + (12.0f / 16.0f) * fillLevel;
 
         poseStack.pushPose();
 
@@ -62,45 +62,47 @@ public class TankBlockEntityRenderer implements BlockEntityRenderer<TankBlockEnt
         VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.translucent());
 
         addQuad(vertexConsumer, matrix,
-                minX, maxY, minZ,
-                maxX, maxY, minZ,
-                maxX, maxY, maxZ,
                 minX, maxY, maxZ,
-                sprite.getU0(), sprite.getV0(), sprite.getU1(), sprite.getV1(),
-                red, green, blue, alpha, packedLight);
+                maxX, maxY, maxZ,
+                maxX, maxY, minZ,
+                minX, maxY, minZ,
+                sprite.getU0(), sprite.getV1(), sprite.getU1(), sprite.getV0(),
+                red, green, blue, alpha, packedLight, 0, 1, 0);
 
-        if (fillLevel > 0.1f) {
+        if (fillLevel > 0.05f) {
+            float sideAlpha = alpha * 0.9f;
+
             addQuad(vertexConsumer, matrix,
-                    minX, minY, minZ,
-                    maxX, minY, minZ,
-                    maxX, maxY, minZ,
                     minX, maxY, minZ,
-                    sprite.getU0(), sprite.getV1(), sprite.getU1(), sprite.getV0(),
-                    red, green, blue, alpha * 0.8f, packedLight);
-
-            addQuad(vertexConsumer, matrix,
-                    maxX, minY, maxZ,
-                    minX, minY, maxZ,
-                    minX, maxY, maxZ,
-                    maxX, maxY, maxZ,
-                    sprite.getU0(), sprite.getV1(), sprite.getU1(), sprite.getV0(),
-                    red, green, blue, alpha * 0.8f, packedLight);
-
-            addQuad(vertexConsumer, matrix,
-                    maxX, minY, minZ,
-                    maxX, minY, maxZ,
-                    maxX, maxY, maxZ,
                     maxX, maxY, minZ,
-                    sprite.getU0(), sprite.getV1(), sprite.getU1(), sprite.getV0(),
-                    red, green, blue, alpha * 0.8f, packedLight);
+                    maxX, minY, minZ,
+                    minX, minY, minZ,
+                    sprite.getU0(), sprite.getV0(), sprite.getU1(), sprite.getV1(),
+                    red, green, blue, sideAlpha, packedLight, 0, 0, -1);
 
             addQuad(vertexConsumer, matrix,
-                    minX, minY, maxZ,
-                    minX, minY, minZ,
-                    minX, maxY, minZ,
+                    maxX, maxY, maxZ,
                     minX, maxY, maxZ,
-                    sprite.getU0(), sprite.getV1(), sprite.getU1(), sprite.getV0(),
-                    red, green, blue, alpha * 0.8f, packedLight);
+                    minX, minY, maxZ,
+                    maxX, minY, maxZ,
+                    sprite.getU0(), sprite.getV0(), sprite.getU1(), sprite.getV1(),
+                    red, green, blue, sideAlpha, packedLight, 0, 0, 1);
+
+            addQuad(vertexConsumer, matrix,
+                    maxX, maxY, minZ,
+                    maxX, maxY, maxZ,
+                    maxX, minY, maxZ,
+                    maxX, minY, minZ,
+                    sprite.getU0(), sprite.getV0(), sprite.getU1(), sprite.getV1(),
+                    red, green, blue, sideAlpha, packedLight, 1, 0, 0);
+
+            addQuad(vertexConsumer, matrix,
+                    minX, maxY, maxZ,
+                    minX, maxY, minZ,
+                    minX, minY, minZ,
+                    minX, minY, maxZ,
+                    sprite.getU0(), sprite.getV0(), sprite.getU1(), sprite.getV1(),
+                    red, green, blue, sideAlpha, packedLight, -1, 0, 0);
         }
 
         poseStack.popPose();
@@ -113,31 +115,31 @@ public class TankBlockEntityRenderer implements BlockEntityRenderer<TankBlockEnt
                          float x4, float y4, float z4,
                          float u1, float v1, float u2, float v2,
                          float red, float green, float blue, float alpha,
-                         int packedLight) {
+                         int packedLight, float normalX, float normalY, float normalZ) {
 
         vertexConsumer.addVertex(matrix, x1, y1, z1)
                 .setColor(red, green, blue, alpha)
-                .setUv(u1, v2)
+                .setUv(u1, v1)
                 .setLight(packedLight)
-                .setNormal(0, 1, 0);
+                .setNormal(normalX, normalY, normalZ);
 
         vertexConsumer.addVertex(matrix, x2, y2, z2)
                 .setColor(red, green, blue, alpha)
-                .setUv(u2, v2)
+                .setUv(u2, v1)
                 .setLight(packedLight)
-                .setNormal(0, 1, 0);
+                .setNormal(normalX, normalY, normalZ);
 
         vertexConsumer.addVertex(matrix, x3, y3, z3)
                 .setColor(red, green, blue, alpha)
+                .setUv(u2, v2)
                 .setLight(packedLight)
-                .setUv(u2, v1)
-                .setNormal(0, 1, 0);
+                .setNormal(normalX, normalY, normalZ);
 
         vertexConsumer.addVertex(matrix, x4, y4, z4)
                 .setColor(red, green, blue, alpha)
-                .setUv(u1, v1)
+                .setUv(u1, v2)
                 .setLight(packedLight)
-                .setNormal(0, 1, 0);
+                .setNormal(normalX, normalY, normalZ);
     }
 
     @Override

@@ -2,19 +2,19 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "minecraft:bucket"
-    },
     "C": {
-      "item": "minecraft:copper_block"
+      "item": "minecraft:copper_ingot"
     },
     "G": {
       "tag": "c:glass_blocks"
+    },
+    "S": {
+      "item": "minecraft:smooth_stone"
     }
   },
   "pattern": [
     "CCC",
-    "BGB",
+    "SGS",
     "CCC"
   ],
   "result": {

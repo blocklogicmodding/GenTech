@@ -2,11 +2,11 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "D": {
-      "item": "minecraft:diamond_block"
+    "B": {
+      "item": "minecraft:bucket"
     },
-    "I": {
-      "item": "minecraft:iron_block"
+    "D": {
+      "item": "minecraft:diamond"
     },
     "T": {
       "item": "gentech:iron_tank"
@@ -14,7 +14,7 @@
   },
   "pattern": [
     "DDD",
-    "ITI",
+    "BTB",
     "DDD"
   ],
   "result": {

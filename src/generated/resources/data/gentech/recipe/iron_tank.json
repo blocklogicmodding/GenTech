@@ -2,19 +2,19 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
+    "B": {
+      "item": "minecraft:bucket"
+    },
     "C": {
-      "item": "minecraft:copper_block"
+      "item": "gentech:copper_tank"
     },
     "I": {
-      "item": "minecraft:iron_block"
-    },
-    "T": {
-      "item": "gentech:copper_tank"
+      "item": "minecraft:iron_ingot"
     }
   },
   "pattern": [
     "III",
-    "TCT",
+    "BCB",
     "III"
   ],
   "result": {

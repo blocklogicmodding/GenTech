@@ -2,19 +2,19 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": {
-      "item": "minecraft:bucket"
-    },
     "C": {
       "item": "gentech:copper_generator"
     },
     "I": {
-      "item": "minecraft:iron_block"
+      "item": "minecraft:iron_ingot"
+    },
+    "S": {
+      "item": "minecraft:smooth_stone"
     }
   },
   "pattern": [
     "III",
-    "BCB",
+    "SCS",
     "III"
   ],
   "result": {
