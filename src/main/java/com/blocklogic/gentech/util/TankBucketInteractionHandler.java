@@ -18,6 +18,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
 public class TankBucketInteractionHandler {
     private static final int BUCKET_CAPACITY = 1000;
@@ -25,7 +26,7 @@ public class TankBucketInteractionHandler {
     public static boolean handleTankBucketInteraction(Level level, BlockPos pos, BlockState state, Player player,
                                                       InteractionHand hand, BlockHitResult hit, ItemStack heldItem) {
         if (level.isClientSide()) {
-            return false;
+            return heldItem.getItem() instanceof BucketItem;
         }
 
         if (!(heldItem.getItem() instanceof BucketItem)) {
@@ -88,12 +89,13 @@ public class TankBucketInteractionHandler {
             return false;
         }
 
-        if (!tankBE.handleBucketInteraction(fluidToInsert, true)) {
+        int simulatedFill = tankBE.getFluidTank().fill(fluidToInsert, IFluidHandler.FluidAction.SIMULATE);
+        if (simulatedFill != BUCKET_CAPACITY) {
             return false;
         }
 
-        boolean success = tankBE.insertBucket(fluidToInsert);
-        if (!success) {
+        int actualFill = tankBE.getFluidTank().fill(fluidToInsert, IFluidHandler.FluidAction.EXECUTE);
+        if (actualFill != BUCKET_CAPACITY) {
             return false;
         }
 
@@ -107,6 +109,9 @@ public class TankBucketInteractionHandler {
         }
 
         level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
+
+        tankBE.setChanged();
+        level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
 
         return true;
     }

@@ -29,7 +29,7 @@ public class BucketInteractionHandler {
     public static boolean handleBucketInteraction(Level level, BlockPos pos, BlockState state, Player player,
                                                   InteractionHand hand, BlockHitResult hit, ItemStack heldItem) {
         if (level.isClientSide()) {
-            return false;
+            return heldItem.getItem() instanceof BucketItem;
         }
 
         if (!(heldItem.getItem() instanceof BucketItem)) {

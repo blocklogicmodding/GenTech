@@ -85,7 +85,7 @@ public class NetheriteGeneratorBlock extends BaseEntityBlock {
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (BucketInteractionHandler.handleBucketInteraction(level, pos, state, player, hand, hit, stack)) {
-            return ItemInteractionResult.SUCCESS;
+            return ItemInteractionResult.CONSUME;
         }
 
         if (GeneratorUpgradeHandler.isGeneratorUpgradeItem(stack)) {
