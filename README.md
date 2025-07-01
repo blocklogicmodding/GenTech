@@ -25,6 +25,8 @@ A Minecraft mod that adds tiered block generators, fluid collectors, and storage
 
 **Four Tank Tiers:**
 
+Tanks can be toggled between "tank mode" and "bucket mode" using the default key binding (G)
+
 -   **Copper Tank** - 10,000 mB capacity
 -   **Iron Tank** - 50,000 mB capacity
 -   **Diamond Tank** - 100,000 mB capacity
