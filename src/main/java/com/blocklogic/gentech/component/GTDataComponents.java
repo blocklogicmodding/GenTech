@@ -10,6 +10,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.bus.api.IEventBus;
@@ -24,6 +25,12 @@ public class GTDataComponents {
             DATA_COMPONENTS.register("fluid_data", () -> DataComponentType.<FluidData>builder()
                     .persistent(FluidData.CODEC)
                     .networkSynchronized(FluidData.STREAM_CODEC)
+                    .build());
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<TankMode>> TANK_MODE =
+            DATA_COMPONENTS.register("tank_mode", () -> DataComponentType.<TankMode>builder()
+                    .persistent(TankMode.CODEC)
+                    .networkSynchronized(TankMode.STREAM_CODEC)
                     .build());
 
     public record FluidData(String fluid1Type, int fluid1Amount, String fluid2Type, int fluid2Amount) {
@@ -93,6 +100,37 @@ public class GTDataComponents {
             String fluid2Id = fluid2 == Fluids.EMPTY ? "" : BuiltInRegistries.FLUID.getKey(fluid2).toString();
             return new FluidData(fluid1Id, amount1, fluid2Id, amount2);
         }
+    }
+
+    public enum TankMode implements StringRepresentable {
+        TANK("tank"),
+        BUCKET("bucket");
+
+        private final String name;
+
+        TankMode(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return name;
+        }
+
+        public static final Codec<TankMode> CODEC = StringRepresentable.fromEnum(TankMode::values);
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, TankMode> STREAM_CODEC =
+                StreamCodec.of(
+                        (buf, mode) -> buf.writeUtf(mode.getSerializedName()),
+                        buf -> {
+                            String name = buf.readUtf();
+                            return name.equals("tank") ? TANK : BUCKET;
+                        }
+                );
     }
 
     public static void register(IEventBus eventBus) {

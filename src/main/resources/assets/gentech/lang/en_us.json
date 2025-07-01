@@ -86,10 +86,10 @@
   "tooltip.gentech.collector_export": "Export: Top/Bottom Only",
 
   "_comment_tank_tooltips": "Tank Tooltips - Used in tank block classes",
-  "tooltip.gentech.tank.tier.copper": "Copper Storage Tank",
-  "tooltip.gentech.tank.tier.iron": "Iron Storage Tank",
-  "tooltip.gentech.tank.tier.diamond": "Diamond Storage Tank",
-  "tooltip.gentech.tank.tier.netherite": "Netherite Storage Tank",
+  "tooltip.gentech.tank.tier.copper": "Copper Tank",
+  "tooltip.gentech.tank.tier.iron": "Iron Tank",
+  "tooltip.gentech.tank.tier.diamond": "Diamond Tank",
+  "tooltip.gentech.tank.tier.netherite": "Netherite Tank",
   "tooltip.gentech.tank.capacities": "Capacity: %s mB",
   "tooltip.gentech.tank.any_fluid": "Stores any fluid type",
   "tooltip.gentech.tank.all_sides": "Input/Output: All sides",
@@ -132,5 +132,18 @@
   "_comment_config_commands": "Configuration Command Messages",
   "command.gentech.config.reloaded": "GenTech configuration reloaded successfully!",
   "command.gentech.recipes.reloaded": "Custom generator recipes reloaded successfully!",
-  "command.gentech.reload.failed": "Failed to reload configuration: %s"
+  "command.gentech.reload.failed": "Failed to reload configuration: %s",
+
+  "_comment_keybinds": "Keybind System",
+  "key.gentech.toggle_tank_mode": "Toggle Tank Mode",
+  "key.categories.gentech": "GenTech",
+
+  "_comment_tank_modes": "Tank Mode System",
+  "tooltip.gentech.tank.mode.tank": "Mode: Tank",
+  "tooltip.gentech.tank.mode.bucket": "Mode: Bucket",
+  "tooltip.gentech.tank.toggle_mode": "Press G to toggle mode",
+
+  "_comment_mode_messages": "Mode Toggle Messages",
+  "message.gentech.tank.mode.tank": "Tank mode: Normal tank behavior",
+  "message.gentech.tank.mode.bucket": "Bucket mode: Pick up and place fluids"
 }

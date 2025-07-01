@@ -134,26 +134,32 @@ public class NetheriteTankBlock extends BaseEntityBlock {
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
 
-        NumberFormat formatter = NumberFormat.getInstance(Locale.US);
+        GTDataComponents.TankMode mode = stack.getOrDefault(GTDataComponents.TANK_MODE.get(), GTDataComponents.TankMode.TANK);
+        tooltipComponents.add(Component.translatable("tooltip.gentech.tank.mode." + mode.getName())
+                .withStyle(mode == GTDataComponents.TankMode.BUCKET ? ChatFormatting.GOLD : ChatFormatting.AQUA));
+
+        tooltipComponents.add(Component.translatable("tooltip.gentech.tank.toggle_mode")
+                .withStyle(ChatFormatting.GRAY));
+
+        tooltipComponents.add(Component.empty());
 
         tooltipComponents.add(Component.translatable("tooltip.gentech.tank.tier.netherite")
                 .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
 
-        tooltipComponents.add(Component.empty());
-
-        tooltipComponents.add(Component.translatable("tooltip.gentech.tank.capacities",
-                        formatter.format(250000))
-                .withStyle(ChatFormatting.BLUE));
-
         tooltipComponents.add(Component.translatable("tooltip.gentech.tank.any_fluid")
-                .withStyle(ChatFormatting.YELLOW));
-
-        tooltipComponents.add(Component.translatable("tooltip.gentech.tank.all_sides")
                 .withStyle(ChatFormatting.GREEN));
 
-        tooltipComponents.add(Component.empty());
+        GTDataComponents.FluidData fluidData = stack.get(GTDataComponents.FLUID_DATA.get());
+        if (fluidData != null && !fluidData.isEmpty()) {
+            tooltipComponents.add(Component.translatable("tooltip.gentech.stored_fluids")
+                    .withStyle(ChatFormatting.YELLOW));
 
-        tooltipComponents.add(Component.translatable("tooltip.gentech.tank.bucket_usage")
-                .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
+            if (fluidData.fluid1Amount() > 0) {
+                String fluidName = fluidData.getFluid1().getFluidType().getDescription().getString();
+                tooltipComponents.add(Component.translatable("tooltip.gentech.stored_fluid",
+                                fluidName, NumberFormat.getInstance(Locale.US).format(fluidData.fluid1Amount()))
+                        .withStyle(ChatFormatting.BLUE));
+            }
+        }
     }
 }
